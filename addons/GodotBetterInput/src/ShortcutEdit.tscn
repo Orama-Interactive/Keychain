@@ -2,9 +2,10 @@
 
 [ext_resource path="res://addons/GodotBetterInput/src/ShortcutEdit.gd" type="Script" id=1]
 
-[node name="Control" type="Control"]
+[node name="ShortcutEdit" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+script = ExtResource( 1 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 anchor_right = 1.0
@@ -28,11 +29,14 @@ text = "Default"
 items = [ "Default", null, false, 0, null, "Custom", null, false, 1, null ]
 selected = 0
 
-[node name="ShortcutEdit" type="Tree" parent="VBoxContainer"]
+[node name="ShortcutTree" type="Tree" parent="VBoxContainer"]
 margin_top = 24.0
 margin_right = 1024.0
 margin_bottom = 600.0
 size_flags_vertical = 3
-script = ExtResource( 1 )
 
-[connection signal="button_pressed" from="VBoxContainer/ShortcutEdit" to="VBoxContainer/ShortcutEdit" method="_on_ShortcutEdit_button_pressed"]
+[node name="ShortcutSelector" type="ConfirmationDialog" parent="."]
+margin_right = 200.0
+margin_bottom = 70.0
+
+[connection signal="button_pressed" from="VBoxContainer/ShortcutTree" to="." method="_on_ShortcutTree_button_pressed"]

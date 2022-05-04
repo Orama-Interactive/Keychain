@@ -24,7 +24,8 @@ test@group={
 }
 hello@group={
 "deadzone": 0.5,
-"events": [  ]
+"events": [ Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":0,"button_index":0,"pressure":0.0,"pressed":false,"script":null)
+ ]
 }
 input@another_group={
 "deadzone": 0.5,
