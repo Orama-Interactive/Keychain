@@ -82,7 +82,7 @@ var groups := {
 }
 var currently_editing_tree_item: TreeItem
 var listening_for_input: int = KEYBOARD
-var listened_input: int = 0
+var listened_input: InputEvent
 
 # Textures taken from Godot https://github.com/godotengine/godot/tree/master/editor/icons
 var add_tex: Texture = preload("res://addons/GodotBetterInput/assets/add.svg")
@@ -168,8 +168,8 @@ func _input(event: InputEvent) -> void:
 	if listening_for_input == KEYBOARD and not event is InputEventKey:
 		return
 	if event.pressed:
-		listened_input = event.scancode
-		key_shortcut_label.text = OS.get_scancode_string(event.scancode)
+		listened_input = event
+		key_shortcut_label.text = OS.get_scancode_string(event.get_scancode_with_modifiers())
 
 
 func _fill_option_buttons() -> void:
@@ -312,9 +312,7 @@ func _on_ShortcutTypeMenu_id_pressed(id: int) -> void:
 func apply_shortcut_change(input_type: int, value: int) -> void:
 	var metadata = currently_editing_tree_item.get_metadata(0)
 	if metadata is InputEvent:
-		if input_type == KEYBOARD:
-			metadata.scancode = value
-		elif input_type == MOUSE:
+		if input_type == MOUSE:
 			metadata.button_index = value + 1
 		elif input_type == JOY_BUTTON:
 			metadata.button_index = value
@@ -324,10 +322,7 @@ func apply_shortcut_change(input_type: int, value: int) -> void:
 		currently_editing_tree_item.set_text(0, _event_to_str(metadata))
 	elif metadata is String:
 		var new_input: InputEvent
-		if input_type == KEYBOARD:
-			new_input = InputEventKey.new()
-			new_input.scancode = value
-		elif input_type == MOUSE:
+		if input_type == MOUSE:
 			new_input = InputEventMouseButton.new()
 			new_input.button_index = value + 1
 		elif input_type == JOY_BUTTON:
@@ -343,7 +338,7 @@ func apply_shortcut_change(input_type: int, value: int) -> void:
 
 func _on_KeyboardShortcutSelector_about_to_show() -> void:
 	listening_for_input = KEYBOARD
-	listened_input = 0
+	listened_input = null
 	key_shortcut_label.text = ""
 	set_process_input(true)
 
@@ -353,9 +348,18 @@ func _on_KeyboardShortcutSelector_popup_hide() -> void:
 
 
 func _on_KeyboardShortcutSelector_confirmed() -> void:
-	if listened_input == 0:
+	if listened_input == null:
 		return
-	apply_shortcut_change(KEYBOARD, listened_input)
+	var metadata = currently_editing_tree_item.get_metadata(0)
+	if metadata is InputEvent:
+		var parent_metadata = currently_editing_tree_item.get_parent().get_metadata(0)
+		InputMap.action_erase_event(parent_metadata, metadata)
+		InputMap.action_add_event(parent_metadata, listened_input)
+		currently_editing_tree_item.set_metadata(0, listened_input)
+		currently_editing_tree_item.set_text(0, _event_to_str(listened_input))
+	elif metadata is String:
+		InputMap.action_add_event(metadata, listened_input)
+		_add_event_tree_item(listened_input, currently_editing_tree_item)
 
 
 func _on_MouseShortcutSelector_confirmed() -> void:
