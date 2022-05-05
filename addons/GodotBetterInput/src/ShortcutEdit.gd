@@ -81,6 +81,8 @@ var groups := {
 	"Child": InputGroup.new("Parent"),
 }
 var currently_editing_tree_item: TreeItem
+var listening_for_input: int = KEYBOARD
+var listened_input: int = 0
 
 # Textures taken from Godot https://github.com/godotengine/godot/tree/master/editor/icons
 var add_tex: Texture = preload("res://addons/GodotBetterInput/assets/add.svg")
@@ -100,6 +102,7 @@ onready var keyboard_shortcut_selector: ConfirmationDialog = $KeyboardShortcutSe
 onready var mouse_shortcut_selector: ConfirmationDialog = $MouseShortcutSelector
 onready var joy_key_shortcut_selector: ConfirmationDialog = $JoyKeyShortcutSelector
 onready var joy_axis_shortcut_selector: ConfirmationDialog = $JoyAxisShortcutSelector
+onready var key_shortcut_label: Label = keyboard_shortcut_selector.find_node("EnteredShortcutLabel")
 
 
 class InputAction:
@@ -120,6 +123,7 @@ class InputGroup:
 
 
 func _ready() -> void:
+	set_process_input(false)
 	_fill_option_buttons()
 
 	var tree_root: TreeItem = tree.create_item()
@@ -158,6 +162,14 @@ func _ready() -> void:
 		tree_item.add_button(0, add_tex, 0, false, "Add")
 		tree_item.add_button(0, delete_tex, 1, false, "Delete")
 		tree_item.collapsed = true
+
+
+func _input(event: InputEvent) -> void:
+	if listening_for_input == KEYBOARD and not event is InputEventKey:
+		return
+	if event.pressed:
+		listened_input = event.scancode
+		key_shortcut_label.text = OS.get_scancode_string(event.scancode)
 
 
 func _fill_option_buttons() -> void:
@@ -301,7 +313,7 @@ func apply_shortcut_change(input_type: int, value: int) -> void:
 	var metadata = currently_editing_tree_item.get_metadata(0)
 	if metadata is InputEvent:
 		if input_type == KEYBOARD:
-			pass
+			metadata.scancode = value
 		elif input_type == MOUSE:
 			metadata.button_index = value + 1
 		elif input_type == JOY_BUTTON:
@@ -314,7 +326,7 @@ func apply_shortcut_change(input_type: int, value: int) -> void:
 		var new_input: InputEvent
 		if input_type == KEYBOARD:
 			new_input = InputEventKey.new()
-#			new_input.scancode =
+			new_input.scancode = value
 		elif input_type == MOUSE:
 			new_input = InputEventMouseButton.new()
 			new_input.button_index = value + 1
@@ -327,6 +339,23 @@ func apply_shortcut_change(input_type: int, value: int) -> void:
 			new_input.axis_value = -1.0 if value % 2 == 0 else 1.0
 		InputMap.action_add_event(metadata, new_input)
 		_add_event_tree_item(new_input, currently_editing_tree_item)
+
+
+func _on_KeyboardShortcutSelector_about_to_show() -> void:
+	listening_for_input = KEYBOARD
+	listened_input = 0
+	key_shortcut_label.text = ""
+	set_process_input(true)
+
+
+func _on_KeyboardShortcutSelector_popup_hide() -> void:
+	set_process_input(false)
+
+
+func _on_KeyboardShortcutSelector_confirmed() -> void:
+	if listened_input == 0:
+		return
+	apply_shortcut_change(KEYBOARD, listened_input)
 
 
 func _on_MouseShortcutSelector_confirmed() -> void:

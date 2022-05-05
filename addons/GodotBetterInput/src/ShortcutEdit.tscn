@@ -49,8 +49,25 @@ items = [ "Key", ExtResource( 3 ), 0, false, false, 0, 0, null, "", false, "Mous
 [node name="KeyboardShortcutSelector" type="ConfirmationDialog" parent="."]
 margin_right = 200.0
 margin_bottom = 70.0
+popup_exclusive = true
 window_title = "Set the shortcut"
-dialog_text = "Press a key or a key combination to set the shortcut"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="KeyboardShortcutSelector"]
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 341.0
+margin_bottom = 40.0
+
+[node name="Label" type="Label" parent="KeyboardShortcutSelector/VBoxContainer"]
+margin_right = 333.0
+margin_bottom = 14.0
+text = "Press a key or a key combination to set the shortcut"
+
+[node name="EnteredShortcutLabel" type="Label" parent="KeyboardShortcutSelector/VBoxContainer"]
+margin_top = 18.0
+margin_right = 333.0
+margin_bottom = 32.0
+align = 1
 
 [node name="MouseShortcutSelector" type="ConfirmationDialog" parent="."]
 margin_right = 200.0
@@ -127,6 +144,9 @@ mouse_default_cursor_shape = 2
 [connection signal="button_pressed" from="VBoxContainer/ShortcutTree" to="." method="_on_ShortcutTree_button_pressed"]
 [connection signal="item_activated" from="VBoxContainer/ShortcutTree" to="." method="_on_ShortcutTree_item_activated"]
 [connection signal="id_pressed" from="ShortcutTypeMenu" to="." method="_on_ShortcutTypeMenu_id_pressed"]
+[connection signal="about_to_show" from="KeyboardShortcutSelector" to="." method="_on_KeyboardShortcutSelector_about_to_show"]
+[connection signal="confirmed" from="KeyboardShortcutSelector" to="." method="_on_KeyboardShortcutSelector_confirmed"]
+[connection signal="popup_hide" from="KeyboardShortcutSelector" to="." method="_on_KeyboardShortcutSelector_popup_hide"]
 [connection signal="confirmed" from="MouseShortcutSelector" to="." method="_on_MouseShortcutSelector_confirmed"]
 [connection signal="confirmed" from="JoyKeyShortcutSelector" to="." method="_on_JoyKeyShortcutSelector_confirmed"]
 [connection signal="confirmed" from="JoyAxisShortcutSelector" to="." method="_on_JoyAxisShortcutSelector_confirmed"]
