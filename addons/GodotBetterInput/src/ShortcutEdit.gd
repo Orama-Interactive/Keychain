@@ -47,31 +47,50 @@ const JOY_AXIS_NAMES := [
 	" (Right Stick Right)",
 	" (Right Stick Up)",
 	" (Right Stick Down)",
-	"", "", "", "",
-	"", " (L2)",
-	"", " (R2)",
-	"", "", "", "",
+	"",
+	"",
+	"",
+	"",
+	"",
+	" (L2)",
+	"",
+	" (R2)",
+	"",
+	"",
+	"",
+	"",
 ]
+
+export(Array, String) var ignore_actions := []
+export(bool) var ignore_ui_actions := false
 
 var groups := {}
 # Textures taken from Godot https://github.com/godotengine/godot/tree/master/editor/icons
-var add_texture: Texture = preload("res://addons/GodotBetterInput/assets/add.svg")
-var edit_texture: Texture = preload("res://addons/GodotBetterInput/assets/edit.svg")
-var delete_texture: Texture = preload("res://addons/GodotBetterInput/assets/close.svg")
-var joy_axis_texture: Texture = preload("res://addons/GodotBetterInput/assets/joy_axis.svg")
-var joy_button_texture: Texture = preload("res://addons/GodotBetterInput/assets/joy_button.svg")
-var keyboard_texture: Texture = preload("res://addons/GodotBetterInput/assets/keyboard.svg")
-var keyboard_physical_texture: Texture = preload("res://addons/GodotBetterInput/assets/keyboard_physical.svg")
-var mouse_texture: Texture = preload("res://addons/GodotBetterInput/assets/mouse.svg")
+var add_tex: Texture = preload("res://addons/GodotBetterInput/assets/add.svg")
+var edit_tex: Texture = preload("res://addons/GodotBetterInput/assets/edit.svg")
+var delete_tex: Texture = preload("res://addons/GodotBetterInput/assets/close.svg")
+var joy_axis_tex: Texture = preload("res://addons/GodotBetterInput/assets/joy_axis.svg")
+var joy_button_tex: Texture = preload("res://addons/GodotBetterInput/assets/joy_button.svg")
+var key_tex: Texture = preload("res://addons/GodotBetterInput/assets/keyboard.svg")
+var key_phys_tex: Texture = preload("res://addons/GodotBetterInput/assets/keyboard_physical.svg")
+var mouse_tex: Texture = preload("res://addons/GodotBetterInput/assets/mouse.svg")
 
 onready var tree: Tree = $VBoxContainer/ShortcutTree
 onready var shortcut_selector: ConfirmationDialog = $ShortcutSelector
+
+
+class InputActionBetter:
+	var display_name := ""
 
 
 func _ready() -> void:
 	var tree_root: TreeItem = tree.create_item()
 	tree_root.set_text(0, "Project Name")
 	for action in InputMap.get_actions():
+		if action in ignore_actions:
+			continue
+		if ignore_ui_actions and action.begins_with("ui_"):
+			continue
 		var action_name := action as String
 		var group_name := ""
 
@@ -97,29 +116,29 @@ func _ready() -> void:
 			event_tree_item.set_metadata(0, event)
 			match event.get_class():
 				"InputEventJoypadMotion":
-					event_tree_item.set_icon(0, joy_axis_texture)
+					event_tree_item.set_icon(0, joy_axis_tex)
 				"InputEventJoypadButton":
-					event_tree_item.set_icon(0, joy_button_texture)
+					event_tree_item.set_icon(0, joy_button_tex)
 				"InputEventKey":
-					var scancode:int = event.get_scancode_with_modifiers()
+					var scancode: int = event.get_scancode_with_modifiers()
 					if scancode > 0:
-						event_tree_item.set_icon(0, keyboard_texture)
+						event_tree_item.set_icon(0, key_tex)
 					else:
-						event_tree_item.set_icon(0, keyboard_physical_texture)
+						event_tree_item.set_icon(0, key_phys_tex)
 				"InputEventMouseButton":
-					event_tree_item.set_icon(0, mouse_texture)
-			event_tree_item.add_button(0, edit_texture, 0, false, "Edit")
-			event_tree_item.add_button(0, delete_texture, 1, false, "Delete")
+					event_tree_item.set_icon(0, mouse_tex)
+			event_tree_item.add_button(0, edit_tex, 0, false, "Edit")
+			event_tree_item.add_button(0, delete_tex, 1, false, "Delete")
 
-		tree_item.add_button(0, add_texture, 0, false, "Add")
-		tree_item.add_button(0, delete_texture, 1, false, "Delete")
+		tree_item.add_button(0, add_tex, 0, false, "Add")
+		tree_item.add_button(0, delete_tex, 1, false, "Delete")
 		tree_item.collapsed = true
 
 
 func event_to_strs(event: InputEvent) -> String:
 	var output := ""
 	if event is InputEventKey:
-		var scancode:int = event.get_scancode_with_modifiers()
+		var scancode: int = event.get_scancode_with_modifiers()
 		var physical_str := ""
 		if scancode == 0:
 			scancode = event.get_physical_scancode_with_modifiers()
@@ -135,7 +154,7 @@ func event_to_strs(event: InputEvent) -> String:
 	return output
 
 
-func _on_ShortcutTree_button_pressed(item: TreeItem, column: int, id: int) -> void:
+func _on_ShortcutTree_button_pressed(item: TreeItem, _column: int, id: int) -> void:
 	var action = item.get_metadata(0)
 	if action is String:
 		if id == 0:  # Edit
