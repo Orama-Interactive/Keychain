@@ -55,6 +55,7 @@ const JOY_AXIS_NAMES := [
 
 var groups := {}
 # Textures taken from Godot https://github.com/godotengine/godot/tree/master/editor/icons
+var add_texture: Texture = preload("res://addons/GodotBetterInput/assets/add.svg")
 var edit_texture: Texture = preload("res://addons/GodotBetterInput/assets/edit.svg")
 var delete_texture: Texture = preload("res://addons/GodotBetterInput/assets/close.svg")
 
@@ -63,7 +64,6 @@ onready var shortcut_selector: ConfirmationDialog = $ShortcutSelector
 
 
 func _ready() -> void:
-	tree.columns = 2
 	var tree_root: TreeItem = tree.create_item()
 	tree_root.set_text(0, "Project Name")
 	for action in InputMap.get_actions():
@@ -85,37 +85,52 @@ func _ready() -> void:
 		else:
 			tree_item = tree.create_item(tree_root)
 		tree_item.set_text(0, action_name)
-		tree_item.set_text(1, action_to_str(action))
-		tree_item.add_button(1, edit_texture, 0, false, "Edit")
-		tree_item.add_button(1, delete_texture, 1, false, "Delete")
+		tree_item.set_metadata(0, action)
+		for event in InputMap.get_action_list(action):
+			var event_tree_item: TreeItem = tree.create_item(tree_item)
+			event_tree_item.set_text(0, event_to_strs(event))
+			event_tree_item.set_metadata(0, event)
+			event_tree_item.add_button(0, edit_texture, 0, false, "Edit")
+			event_tree_item.add_button(0, delete_texture, 1, false, "Delete")
+
+		tree_item.add_button(0, add_texture, 0, false, "Add")
+		tree_item.add_button(0, delete_texture, 1, false, "Delete")
+		tree_item.collapsed = true
 
 
-func action_to_str(action: String) -> String:
+func event_to_strs(event: InputEvent) -> String:
 	var output := ""
-	var i := 1
-	for event in InputMap.get_action_list(action):
-		var event_str := ""
-		if event is InputEventKey:
-			event_str = OS.get_scancode_string(event.get_scancode_with_modifiers())
-		elif event is InputEventMouse:
-			event_str = MOUSE_BUTTON_NAMES[event.button_index]
-		elif event is InputEventJoypadButton:
-			event_str = JOY_BUTTON_NAMES[event.button_index]
-		elif event is InputEventJoypadMotion:
-			var axis_value: int = event.axis * 2 + int(event.axis_value > 0)
-			event_str = "Axis %s -%s" % [event.axis, JOY_AXIS_NAMES[axis_value]]
-		output += "%s: %s " % [i, event_str]
-		i += 1
-	if output == "":
-		output = "None"
+	if event is InputEventKey:
+		output = OS.get_scancode_string(event.get_scancode_with_modifiers())
+	elif event is InputEventMouse:
+		output = MOUSE_BUTTON_NAMES[event.button_index]
+	elif event is InputEventJoypadButton:
+		output = JOY_BUTTON_NAMES[event.button_index]
+	elif event is InputEventJoypadMotion:
+		var axis_value: int = event.axis * 2 + int(event.axis_value > 0)
+		output = "Axis %s -%s" % [event.axis, JOY_AXIS_NAMES[axis_value]]
 	return output
 
 
 func _on_ShortcutTree_button_pressed(item: TreeItem, column: int, id: int) -> void:
-	var action: String = item.get_text(0)
-	if id == 0:  # Edit
-		shortcut_selector.popup_centered()
-	elif id == 1:  # Delete
-		for event in InputMap.get_action_list(action):
-			InputMap.action_erase_event(action, event)
-		item.set_text(1, "None")
+	var action = item.get_metadata(0)
+	if action is String:
+		if id == 0:  # Edit
+			shortcut_selector.popup_centered()
+		elif id == 1:  # Delete
+			for event in InputMap.get_action_list(action):
+				InputMap.action_erase_event(action, event)
+			var child := item.get_children()
+			while child != null:
+				child.free()
+				child = item.get_children()
+
+	elif action is InputEvent:
+		if id == 0:  # Edit
+			shortcut_selector.popup_centered()
+		elif id == 1:  # Delete
+			var parent_action = item.get_parent().get_metadata(0)
+			if not parent_action is String:
+				return
+			InputMap.action_erase_event(parent_action, action)
+			item.free()

@@ -34,6 +34,7 @@ margin_top = 24.0
 margin_right = 1024.0
 margin_bottom = 600.0
 size_flags_vertical = 3
+hide_root = true
 
 [node name="ShortcutSelector" type="ConfirmationDialog" parent="."]
 margin_right = 200.0
