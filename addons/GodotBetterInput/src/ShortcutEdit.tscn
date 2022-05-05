@@ -1,6 +1,10 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://addons/GodotBetterInput/src/ShortcutEdit.gd" type="Script" id=1]
+[ext_resource path="res://addons/GodotBetterInput/assets/joy_button.svg" type="Texture" id=2]
+[ext_resource path="res://addons/GodotBetterInput/assets/keyboard.svg" type="Texture" id=3]
+[ext_resource path="res://addons/GodotBetterInput/assets/joy_axis.svg" type="Texture" id=4]
+[ext_resource path="res://addons/GodotBetterInput/assets/mouse.svg" type="Texture" id=5]
 
 [node name="ShortcutEdit" type="Control"]
 anchor_right = 1.0
@@ -25,6 +29,7 @@ text = "Presets:"
 margin_left = 56.0
 margin_right = 131.0
 margin_bottom = 20.0
+mouse_default_cursor_shape = 2
 text = "Default"
 items = [ "Default", null, false, 0, null, "Custom", null, false, 1, null ]
 selected = 0
@@ -36,14 +41,89 @@ margin_bottom = 600.0
 size_flags_vertical = 3
 hide_root = true
 
-[node name="ShortcutSelector" type="ConfirmationDialog" parent="."]
-margin_right = 200.0
-margin_bottom = 70.0
-
 [node name="ShortcutTypeMenu" type="PopupMenu" parent="."]
 margin_right = 20.0
 margin_bottom = 20.0
-items = [ "Key", null, 0, false, false, 0, 0, null, "", false, "Mouse Button", null, 0, false, false, 1, 0, null, "", false, "Joy Button", null, 0, false, false, 2, 0, null, "", false, "Joy Axis", null, 0, false, false, 3, 0, null, "", false ]
+items = [ "Key", ExtResource( 3 ), 0, false, false, 0, 0, null, "", false, "Mouse Button", ExtResource( 5 ), 0, false, false, 1, 0, null, "", false, "Joy Button", ExtResource( 2 ), 0, false, false, 2, 0, null, "", false, "Joy Axis", ExtResource( 4 ), 0, false, false, 3, 0, null, "", false ]
+
+[node name="KeyboardShortcutSelector" type="ConfirmationDialog" parent="."]
+margin_right = 200.0
+margin_bottom = 70.0
+window_title = "Set the shortcut"
+dialog_text = "Press a key or a key combination to set the shortcut"
+
+[node name="MouseShortcutSelector" type="ConfirmationDialog" parent="."]
+margin_right = 200.0
+margin_bottom = 70.0
+window_title = "Set the shortcut"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MouseShortcutSelector"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 8.0
+margin_top = 8.0
+margin_right = -8.0
+margin_bottom = -36.0
+
+[node name="Label" type="Label" parent="MouseShortcutSelector/VBoxContainer"]
+margin_right = 200.0
+margin_bottom = 14.0
+text = "Mouse Button Index:"
+
+[node name="OptionButton" type="OptionButton" parent="MouseShortcutSelector/VBoxContainer"]
+margin_top = 18.0
+margin_right = 200.0
+margin_bottom = 38.0
+mouse_default_cursor_shape = 2
+
+[node name="JoyKeyShortcutSelector" type="ConfirmationDialog" parent="."]
+margin_right = 200.0
+margin_bottom = 70.0
+window_title = "Set the shortcut"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="JoyKeyShortcutSelector"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 8.0
+margin_top = 8.0
+margin_right = -8.0
+margin_bottom = -36.0
+
+[node name="Label" type="Label" parent="JoyKeyShortcutSelector/VBoxContainer"]
+margin_right = 200.0
+margin_bottom = 14.0
+text = "Mouse Button Index:"
+
+[node name="OptionButton" type="OptionButton" parent="JoyKeyShortcutSelector/VBoxContainer"]
+margin_top = 18.0
+margin_right = 200.0
+margin_bottom = 38.0
+mouse_default_cursor_shape = 2
+
+[node name="JoyAxisShortcutSelector" type="ConfirmationDialog" parent="."]
+margin_right = 200.0
+margin_bottom = 70.0
+window_title = "Set the shortcut"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="JoyAxisShortcutSelector"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 8.0
+margin_top = 8.0
+margin_right = -8.0
+margin_bottom = -36.0
+
+[node name="Label" type="Label" parent="JoyAxisShortcutSelector/VBoxContainer"]
+margin_right = 200.0
+margin_bottom = 14.0
+text = "Mouse Button Index:"
+
+[node name="OptionButton" type="OptionButton" parent="JoyAxisShortcutSelector/VBoxContainer"]
+margin_top = 18.0
+margin_right = 200.0
+margin_bottom = 38.0
+mouse_default_cursor_shape = 2
 
 [connection signal="button_pressed" from="VBoxContainer/ShortcutTree" to="." method="_on_ShortcutTree_button_pressed"]
 [connection signal="item_activated" from="VBoxContainer/ShortcutTree" to="." method="_on_ShortcutTree_item_activated"]
+[connection signal="id_pressed" from="ShortcutTypeMenu" to="." method="_on_ShortcutTypeMenu_id_pressed"]

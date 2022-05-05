@@ -92,8 +92,11 @@ var shortcut_tex: Texture = preload("res://addons/GodotBetterInput/assets/shortc
 var folder_tex: Texture = preload("res://addons/GodotBetterInput/assets/folder.svg")
 
 onready var tree: Tree = $VBoxContainer/ShortcutTree
-onready var shortcut_selector: ConfirmationDialog = $ShortcutSelector
 onready var shortcut_type_menu: PopupMenu = $ShortcutTypeMenu
+onready var keyboard_shortcut_selector: ConfirmationDialog = $KeyboardShortcutSelector
+onready var mouse_shortcut_selector: ConfirmationDialog = $MouseShortcutSelector
+onready var joy_key_shortcut_selector: ConfirmationDialog = $JoyKeyShortcutSelector
+onready var joy_axis_shortcut_selector: ConfirmationDialog = $JoyAxisShortcutSelector
 
 
 class InputAction:
@@ -114,6 +117,8 @@ class InputGroup:
 
 
 func _ready() -> void:
+	_fill_option_buttons()
+
 	var tree_root: TreeItem = tree.create_item()
 	tree_root.set_text(0, "Project Name")
 	for group in groups:  # Create groups
@@ -168,6 +173,26 @@ func _ready() -> void:
 		tree_item.add_button(0, add_tex, 0, false, "Add")
 		tree_item.add_button(0, delete_tex, 1, false, "Delete")
 		tree_item.collapsed = true
+
+
+func _fill_option_buttons() -> void:
+	var mouse_option_button: OptionButton = mouse_shortcut_selector.find_node("OptionButton")
+	for option in MOUSE_BUTTON_NAMES:
+		mouse_option_button.add_item(option)
+
+	var joy_key_option_button: OptionButton = joy_key_shortcut_selector.find_node("OptionButton")
+	for i in JOY_BUTTON_MAX:
+		var text: String = "Button %s" % i
+		if i < JOY_BUTTON_NAMES.size():
+			text += " (%s)" % JOY_BUTTON_NAMES[i]
+		joy_key_option_button.add_item(text)
+
+	var joy_axis_option_button: OptionButton = joy_axis_shortcut_selector.find_node("OptionButton")
+	var i := 0.0
+	for option in JOY_AXIS_NAMES:
+		var text: String = "Axis %s -%s" % [floor(i), option]
+		joy_axis_option_button.add_item(text)
+		i += 0.5
 
 
 func _create_group_tree_item(group: InputGroup, group_name: String) -> void:
@@ -231,7 +256,14 @@ func _on_ShortcutTree_button_pressed(item: TreeItem, _column: int, id: int) -> v
 
 	elif action is InputEvent:
 		if id == 0:  # Edit
-			shortcut_selector.popup_centered()
+			if action is InputEventKey:
+				keyboard_shortcut_selector.popup_centered()
+			elif action is InputEventMouseButton:
+				mouse_shortcut_selector.popup_centered()
+			elif action is InputEventJoypadButton:
+				joy_key_shortcut_selector.popup_centered()
+			elif action is InputEventJoypadMotion:
+				joy_axis_shortcut_selector.popup_centered()
 		elif id == 1:  # Delete
 			var parent_action = item.get_parent().get_metadata(0)
 			if not parent_action is String:
@@ -242,3 +274,14 @@ func _on_ShortcutTree_button_pressed(item: TreeItem, _column: int, id: int) -> v
 
 func _on_ShortcutTree_item_activated() -> void:
 	_on_ShortcutTree_button_pressed(tree.get_selected(), 0, 0)
+
+
+func _on_ShortcutTypeMenu_id_pressed(id: int) -> void:
+	if id == 0:
+		keyboard_shortcut_selector.popup_centered()
+	elif id == 1:
+		mouse_shortcut_selector.popup_centered()
+	elif id == 2:
+		joy_key_shortcut_selector.popup_centered()
+	elif id == 3:
+		joy_axis_shortcut_selector.popup_centered()
