@@ -1,5 +1,17 @@
 extends Control
 
+const MOUSE_BUTTON_NAMES := [
+	"Left Button",
+	"Right Button",
+	"Middle Button",
+	"Wheel Up Button",
+	"Wheel Down Button",
+	"Wheel Left Button",
+	"Wheel Right Button",
+	"X Button 1",
+	"X Button 2",
+]
+
 const JOY_BUTTON_NAMES := [
 	"DualShock Cross, Xbox A, Nintendo B",
 	"DualShock Circle, Xbox B, Nintendo A",
@@ -24,6 +36,21 @@ const JOY_BUTTON_NAMES := [
 	"Xbox Paddle 3",
 	"Xbox Paddle 4",
 	"PS4/5 Touchpad",
+]
+
+const JOY_AXIS_NAMES := [
+	" (Left Stick Left)",
+	" (Left Stick Right)",
+	" (Left Stick Up)",
+	" (Left Stick Down)",
+	" (Right Stick Left)",
+	" (Right Stick Right)",
+	" (Right Stick Up)",
+	" (Right Stick Down)",
+	"", "", "", "",
+	"", " (L2)",
+	"", " (R2)",
+	"", "", "", "",
 ]
 
 var groups := {}
@@ -70,8 +97,13 @@ func action_to_str(action: String) -> String:
 		var event_str := ""
 		if event is InputEventKey:
 			event_str = OS.get_scancode_string(event.get_scancode_with_modifiers())
+		elif event is InputEventMouse:
+			event_str = MOUSE_BUTTON_NAMES[event.button_index]
 		elif event is InputEventJoypadButton:
 			event_str = JOY_BUTTON_NAMES[event.button_index]
+		elif event is InputEventJoypadMotion:
+			var axis_value: int = event.axis * 2 + int(event.axis_value > 0)
+			event_str = "Axis %s -%s" % [event.axis, JOY_AXIS_NAMES[axis_value]]
 		output += "%s: %s " % [i, event_str]
 		i += 1
 	if output == "":
