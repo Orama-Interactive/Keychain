@@ -64,7 +64,21 @@ const JOY_AXIS_NAMES := [
 export(Array, String) var ignore_actions := []
 export(bool) var ignore_ui_actions := false
 
-var groups := {}
+var actions := {
+	"test_action": InputAction.new("Test Action", "GroupOne"),
+	"input": InputAction.new("Input"),
+	"nicer_input": InputAction.new("Nicer input", "GroupOne"),
+	"hello": InputAction.new("Howdy!", "Test"),
+	"grandchild": InputAction.new("Grandchild Action", "Child"),
+	"sibling": InputAction.new("Sibling", "Child"),
+}
+var groups := {
+	"GroupOne": InputGroup.new(),
+	"Grandparent": InputGroup.new(),
+	"Parent": InputGroup.new("Grandparent"),
+	"Child": InputGroup.new("Parent"),
+}
+
 # Textures taken from Godot https://github.com/godotengine/godot/tree/master/editor/icons
 var add_tex: Texture = preload("res://addons/GodotBetterInput/assets/add.svg")
 var edit_tex: Texture = preload("res://addons/GodotBetterInput/assets/edit.svg")
@@ -79,36 +93,53 @@ onready var tree: Tree = $VBoxContainer/ShortcutTree
 onready var shortcut_selector: ConfirmationDialog = $ShortcutSelector
 
 
-class InputActionBetter:
+class InputAction:
 	var display_name := ""
+	var group := ""
+
+	func _init(_display_name: String, _group := "") -> void:
+		display_name = _display_name
+		group = _group
+
+
+class InputGroup:
+	var parent_group := ""
+	var tree_item: TreeItem
+
+	func _init(_parent_group := "") -> void:
+		parent_group = _parent_group
 
 
 func _ready() -> void:
 	var tree_root: TreeItem = tree.create_item()
 	tree_root.set_text(0, "Project Name")
+	for group in groups:  # Create groups
+		var input_group: InputGroup = groups[group]
+		create_group_tree_item(input_group, group)
+
 	for action in InputMap.get_actions():
 		if action in ignore_actions:
 			continue
 		if ignore_ui_actions and action.begins_with("ui_"):
 			continue
-		var action_name := action as String
-		var group_name := ""
 
-		if "@" in action:
-			var pos: int = action.rfind("@")
-			group_name = action.right(pos + 1)
-			action_name = action.left(pos)
-			if not group_name in groups:
-				var group_root: TreeItem = tree.create_item(tree_root)
-				group_root.set_text(0, group_name)
-				groups[group_name] = group_root
+		var display_name := action as String
+		var group_name := ""
+		if action in actions:
+			var input_action: InputAction = actions[action]
+			display_name = input_action.display_name
+			group_name = input_action.group
 
 		var tree_item: TreeItem
-		if group_name:
-			tree_item = tree.create_item(groups[group_name])
+		if group_name and group_name in groups:
+			var input_group: InputGroup = groups[group_name]
+			var group_root: TreeItem = input_group.tree_item
+			tree_item = tree.create_item(group_root)
+
 		else:
 			tree_item = tree.create_item(tree_root)
-		tree_item.set_text(0, action_name)
+
+		tree_item.set_text(0, display_name)
 		tree_item.set_metadata(0, action)
 		for event in InputMap.get_action_list(action):
 			var event_tree_item: TreeItem = tree.create_item(tree_item)
@@ -133,6 +164,21 @@ func _ready() -> void:
 		tree_item.add_button(0, add_tex, 0, false, "Add")
 		tree_item.add_button(0, delete_tex, 1, false, "Delete")
 		tree_item.collapsed = true
+
+
+func create_group_tree_item(group: InputGroup, group_name: String) -> void:
+	if group.tree_item:
+		return
+
+	var group_root: TreeItem
+	if group.parent_group:
+		var parent_group: InputGroup = groups[group.parent_group]
+		create_group_tree_item(parent_group, group.parent_group)
+		group_root = tree.create_item(parent_group.tree_item)
+	else:
+		group_root = tree.create_item(tree.get_root())
+	group_root.set_text(0, group_name)
+	group.tree_item = group_root
 
 
 func event_to_strs(event: InputEvent) -> String:
