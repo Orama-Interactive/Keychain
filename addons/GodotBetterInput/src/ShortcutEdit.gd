@@ -93,6 +93,7 @@ var folder_tex: Texture = preload("res://addons/GodotBetterInput/assets/folder.s
 
 onready var tree: Tree = $VBoxContainer/ShortcutTree
 onready var shortcut_selector: ConfirmationDialog = $ShortcutSelector
+onready var shortcut_type_menu: PopupMenu = $ShortcutTypeMenu
 
 
 class InputAction:
@@ -215,7 +216,11 @@ func _on_ShortcutTree_button_pressed(item: TreeItem, _column: int, id: int) -> v
 	var action = item.get_metadata(0)
 	if action is String:
 		if id == 0:  # Edit
-			shortcut_selector.popup_centered()
+			var rect: Rect2 = tree.get_item_area_rect(item, 0)
+			rect.position.x = rect.end.x
+			rect.position.y += 42
+			rect.size = Vector2(110, 92)
+			shortcut_type_menu.popup(rect)
 		elif id == 1:  # Delete
 			for event in InputMap.get_action_list(action):
 				InputMap.action_erase_event(action, event)
@@ -236,4 +241,4 @@ func _on_ShortcutTree_button_pressed(item: TreeItem, _column: int, id: int) -> v
 
 
 func _on_ShortcutTree_item_activated() -> void:
-	print("e")
+	_on_ShortcutTree_button_pressed(tree.get_selected(), 0, 0)

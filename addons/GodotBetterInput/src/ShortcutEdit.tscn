@@ -40,5 +40,10 @@ hide_root = true
 margin_right = 200.0
 margin_bottom = 70.0
 
+[node name="ShortcutTypeMenu" type="PopupMenu" parent="."]
+margin_right = 20.0
+margin_bottom = 20.0
+items = [ "Key", null, 0, false, false, 0, 0, null, "", false, "Mouse Button", null, 0, false, false, 1, 0, null, "", false, "Joy Button", null, 0, false, false, 2, 0, null, "", false, "Joy Axis", null, 0, false, false, 3, 0, null, "", false ]
+
 [connection signal="button_pressed" from="VBoxContainer/ShortcutTree" to="." method="_on_ShortcutTree_button_pressed"]
 [connection signal="item_activated" from="VBoxContainer/ShortcutTree" to="." method="_on_ShortcutTree_item_activated"]
