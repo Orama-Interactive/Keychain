@@ -1,5 +1,7 @@
 extends Control
 
+enum { KEYBOARD, MOUSE, JOY_BUTTON, JOY_AXIS }
+
 const MOUSE_BUTTON_NAMES := [
 	"Left Button",
 	"Right Button",
@@ -173,7 +175,8 @@ func _fill_option_buttons() -> void:
 	var joy_axis_option_button: OptionButton = joy_axis_shortcut_selector.find_node("OptionButton")
 	var i := 0.0
 	for option in JOY_AXIS_NAMES:
-		var text: String = "Axis %s -%s" % [floor(i), option]
+		var sign_symbol = "+" if floor(i) != i else "-"
+		var text: String = "Axis %s %s%s" % [floor(i), sign_symbol, option]
 		joy_axis_option_button.add_item(text)
 		i += 0.5
 
@@ -236,8 +239,10 @@ func _event_to_str(event: InputEvent) -> String:
 			output = "Button %s (%s)" % [button_index, JOY_BUTTON_NAMES[button_index]]
 
 	elif event is InputEventJoypadMotion:
-		var axis_value: int = event.axis * 2 + int(event.axis_value > 0)
-		output = "Axis %s -%s" % [event.axis, JOY_AXIS_NAMES[axis_value]]
+		var positive_axis: bool = event.axis_value > 0
+		var axis_value: int = event.axis * 2 + int(positive_axis)
+		var sign_symbol = "+" if positive_axis else "-"
+		output = "Axis %s %s%s" % [event.axis, sign_symbol, JOY_AXIS_NAMES[axis_value]]
 	return output
 
 
@@ -282,24 +287,55 @@ func _on_ShortcutTree_item_activated() -> void:
 
 
 func _on_ShortcutTypeMenu_id_pressed(id: int) -> void:
-	if id == 0:
+	if id == KEYBOARD:
 		keyboard_shortcut_selector.popup_centered()
-	elif id == 1:
+	elif id == MOUSE:
 		mouse_shortcut_selector.popup_centered()
-	elif id == 2:
+	elif id == JOY_BUTTON:
 		joy_key_shortcut_selector.popup_centered()
-	elif id == 3:
+	elif id == JOY_AXIS:
 		joy_axis_shortcut_selector.popup_centered()
 
 
-func _on_MouseShortcutSelector_confirmed() -> void:
-	var mouse_option_button: OptionButton = mouse_shortcut_selector.find_node("OptionButton")
+func apply_shortcut_change(input_type: int, value: int) -> void:
 	var metadata = currently_editing_tree_item.get_metadata(0)
 	if metadata is InputEvent:
-		metadata.button_index = mouse_option_button.selected + 1
+		if input_type == KEYBOARD:
+			pass
+		elif input_type == MOUSE:
+			metadata.button_index = value + 1
+		elif input_type == JOY_BUTTON:
+			metadata.button_index = value
+		elif input_type == JOY_AXIS:
+			metadata.axis = value / 2
+			metadata.axis_value = -1.0 if value % 2 == 0 else 1.0
 		currently_editing_tree_item.set_text(0, _event_to_str(metadata))
 	elif metadata is String:
-		var new_input := InputEventMouseButton.new()
-		new_input.button_index = mouse_option_button.selected + 1
+		var new_input: InputEvent
+		if input_type == KEYBOARD:
+			new_input = InputEventKey.new()
+#			new_input.scancode =
+		elif input_type == MOUSE:
+			new_input = InputEventMouseButton.new()
+			new_input.button_index = value + 1
+		elif input_type == JOY_BUTTON:
+			new_input = InputEventJoypadButton.new()
+			new_input.button_index = value
+		elif input_type == JOY_AXIS:
+			new_input = InputEventJoypadMotion.new()
+			new_input.axis = value / 2
+			new_input.axis_value = -1.0 if value % 2 == 0 else 1.0
 		InputMap.action_add_event(metadata, new_input)
 		_add_event_tree_item(new_input, currently_editing_tree_item)
+
+
+func _on_MouseShortcutSelector_confirmed() -> void:
+	apply_shortcut_change(MOUSE, mouse_shortcut_selector.find_node("OptionButton").selected)
+
+
+func _on_JoyKeyShortcutSelector_confirmed() -> void:
+	apply_shortcut_change(JOY_BUTTON, joy_key_shortcut_selector.find_node("OptionButton").selected)
+
+
+func _on_JoyAxisShortcutSelector_confirmed() -> void:
+	apply_shortcut_change(JOY_AXIS, joy_axis_shortcut_selector.find_node("OptionButton").selected)
