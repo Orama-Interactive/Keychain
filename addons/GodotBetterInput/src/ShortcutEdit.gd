@@ -58,6 +58,11 @@ var groups := {}
 var add_texture: Texture = preload("res://addons/GodotBetterInput/assets/add.svg")
 var edit_texture: Texture = preload("res://addons/GodotBetterInput/assets/edit.svg")
 var delete_texture: Texture = preload("res://addons/GodotBetterInput/assets/close.svg")
+var joy_axis_texture: Texture = preload("res://addons/GodotBetterInput/assets/joy_axis.svg")
+var joy_button_texture: Texture = preload("res://addons/GodotBetterInput/assets/joy_button.svg")
+var keyboard_texture: Texture = preload("res://addons/GodotBetterInput/assets/keyboard.svg")
+var keyboard_physical_texture: Texture = preload("res://addons/GodotBetterInput/assets/keyboard_physical.svg")
+var mouse_texture: Texture = preload("res://addons/GodotBetterInput/assets/mouse.svg")
 
 onready var tree: Tree = $VBoxContainer/ShortcutTree
 onready var shortcut_selector: ConfirmationDialog = $ShortcutSelector
@@ -90,6 +95,19 @@ func _ready() -> void:
 			var event_tree_item: TreeItem = tree.create_item(tree_item)
 			event_tree_item.set_text(0, event_to_strs(event))
 			event_tree_item.set_metadata(0, event)
+			match event.get_class():
+				"InputEventJoypadMotion":
+					event_tree_item.set_icon(0, joy_axis_texture)
+				"InputEventJoypadButton":
+					event_tree_item.set_icon(0, joy_button_texture)
+				"InputEventKey":
+					var scancode:int = event.get_scancode_with_modifiers()
+					if scancode > 0:
+						event_tree_item.set_icon(0, keyboard_texture)
+					else:
+						event_tree_item.set_icon(0, keyboard_physical_texture)
+				"InputEventMouseButton":
+					event_tree_item.set_icon(0, mouse_texture)
 			event_tree_item.add_button(0, edit_texture, 0, false, "Edit")
 			event_tree_item.add_button(0, delete_texture, 1, false, "Delete")
 
@@ -101,8 +119,13 @@ func _ready() -> void:
 func event_to_strs(event: InputEvent) -> String:
 	var output := ""
 	if event is InputEventKey:
-		output = OS.get_scancode_string(event.get_scancode_with_modifiers())
-	elif event is InputEventMouse:
+		var scancode:int = event.get_scancode_with_modifiers()
+		var physical_str := ""
+		if scancode == 0:
+			scancode = event.get_physical_scancode_with_modifiers()
+			physical_str = " " + tr("(Physical)")
+		output = OS.get_scancode_string(scancode) + physical_str
+	elif event is InputEventMouseButton:
 		output = MOUSE_BUTTON_NAMES[event.button_index]
 	elif event is InputEventJoypadButton:
 		output = JOY_BUTTON_NAMES[event.button_index]
@@ -134,3 +157,7 @@ func _on_ShortcutTree_button_pressed(item: TreeItem, column: int, id: int) -> vo
 				return
 			InputMap.action_erase_event(parent_action, action)
 			item.free()
+
+
+func _on_ShortcutTree_item_activated() -> void:
+	print("e")

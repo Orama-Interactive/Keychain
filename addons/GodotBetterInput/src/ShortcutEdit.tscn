@@ -41,3 +41,4 @@ margin_right = 200.0
 margin_bottom = 70.0
 
 [connection signal="button_pressed" from="VBoxContainer/ShortcutTree" to="." method="_on_ShortcutTree_button_pressed"]
+[connection signal="item_activated" from="VBoxContainer/ShortcutTree" to="." method="_on_ShortcutTree_item_activated"]
