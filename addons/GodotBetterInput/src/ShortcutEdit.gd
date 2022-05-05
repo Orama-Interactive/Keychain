@@ -112,5 +112,10 @@ func action_to_str(action: String) -> String:
 
 
 func _on_ShortcutTree_button_pressed(item: TreeItem, column: int, id: int) -> void:
+	var action: String = item.get_text(0)
 	if id == 0:  # Edit
 		shortcut_selector.popup_centered()
+	elif id == 1:  # Delete
+		for event in InputMap.get_action_list(action):
+			InputMap.action_erase_event(action, event)
+		item.set_text(1, "None")
