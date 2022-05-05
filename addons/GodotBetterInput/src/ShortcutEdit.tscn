@@ -127,3 +127,4 @@ mouse_default_cursor_shape = 2
 [connection signal="button_pressed" from="VBoxContainer/ShortcutTree" to="." method="_on_ShortcutTree_button_pressed"]
 [connection signal="item_activated" from="VBoxContainer/ShortcutTree" to="." method="_on_ShortcutTree_item_activated"]
 [connection signal="id_pressed" from="ShortcutTypeMenu" to="." method="_on_ShortcutTypeMenu_id_pressed"]
+[connection signal="confirmed" from="MouseShortcutSelector" to="." method="_on_MouseShortcutSelector_confirmed"]
