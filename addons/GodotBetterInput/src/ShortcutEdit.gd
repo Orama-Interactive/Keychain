@@ -88,6 +88,8 @@ var joy_button_tex: Texture = preload("res://addons/GodotBetterInput/assets/joy_
 var key_tex: Texture = preload("res://addons/GodotBetterInput/assets/keyboard.svg")
 var key_phys_tex: Texture = preload("res://addons/GodotBetterInput/assets/keyboard_physical.svg")
 var mouse_tex: Texture = preload("res://addons/GodotBetterInput/assets/mouse.svg")
+var shortcut_tex: Texture = preload("res://addons/GodotBetterInput/assets/shortcut.svg")
+var folder_tex: Texture = preload("res://addons/GodotBetterInput/assets/folder.svg")
 
 onready var tree: Tree = $VBoxContainer/ShortcutTree
 onready var shortcut_selector: ConfirmationDialog = $ShortcutSelector
@@ -115,7 +117,7 @@ func _ready() -> void:
 	tree_root.set_text(0, "Project Name")
 	for group in groups:  # Create groups
 		var input_group: InputGroup = groups[group]
-		create_group_tree_item(input_group, group)
+		_create_group_tree_item(input_group, group)
 
 	for action in InputMap.get_actions():
 		if action in ignore_actions:
@@ -141,9 +143,10 @@ func _ready() -> void:
 
 		tree_item.set_text(0, display_name)
 		tree_item.set_metadata(0, action)
+		tree_item.set_icon(0, shortcut_tex)
 		for event in InputMap.get_action_list(action):
 			var event_tree_item: TreeItem = tree.create_item(tree_item)
-			event_tree_item.set_text(0, event_to_strs(event))
+			event_tree_item.set_text(0, _event_to_str(event))
 			event_tree_item.set_metadata(0, event)
 			match event.get_class():
 				"InputEventJoypadMotion":
@@ -166,22 +169,23 @@ func _ready() -> void:
 		tree_item.collapsed = true
 
 
-func create_group_tree_item(group: InputGroup, group_name: String) -> void:
+func _create_group_tree_item(group: InputGroup, group_name: String) -> void:
 	if group.tree_item:
 		return
 
 	var group_root: TreeItem
 	if group.parent_group:
 		var parent_group: InputGroup = groups[group.parent_group]
-		create_group_tree_item(parent_group, group.parent_group)
+		_create_group_tree_item(parent_group, group.parent_group)
 		group_root = tree.create_item(parent_group.tree_item)
 	else:
 		group_root = tree.create_item(tree.get_root())
 	group_root.set_text(0, group_name)
+	group_root.set_icon(0, folder_tex)
 	group.tree_item = group_root
 
 
-func event_to_strs(event: InputEvent) -> String:
+func _event_to_str(event: InputEvent) -> String:
 	var output := ""
 	if event is InputEventKey:
 		var scancode: int = event.get_scancode_with_modifiers()
@@ -190,10 +194,17 @@ func event_to_strs(event: InputEvent) -> String:
 			scancode = event.get_physical_scancode_with_modifiers()
 			physical_str = " " + tr("(Physical)")
 		output = OS.get_scancode_string(scancode) + physical_str
+
 	elif event is InputEventMouseButton:
 		output = MOUSE_BUTTON_NAMES[event.button_index]
+
 	elif event is InputEventJoypadButton:
-		output = JOY_BUTTON_NAMES[event.button_index]
+		var button_index: int = event.button_index
+		if button_index >= JOY_BUTTON_NAMES.size():
+			output = "Button %s" % button_index
+		else:
+			output = "Button %s (%s)" % [button_index, JOY_BUTTON_NAMES[button_index]]
+
 	elif event is InputEventJoypadMotion:
 		var axis_value: int = event.axis * 2 + int(event.axis_value > 0)
 		output = "Axis %s -%s" % [event.axis, JOY_AXIS_NAMES[axis_value]]
