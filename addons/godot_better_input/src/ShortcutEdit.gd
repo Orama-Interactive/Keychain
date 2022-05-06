@@ -89,7 +89,7 @@ var groups := {
 	"Child": InputGroup.new("Parent"),
 }
 var currently_editing_tree_item: TreeItem
-var config_file := ConfigFile.new()
+var config_file: ConfigFile
 
 # Textures taken from Godot https://github.com/godotengine/godot/tree/master/editor/icons
 var add_tex: Texture = preload("res://addons/godot_better_input/assets/add.svg")
@@ -165,6 +165,8 @@ class InputGroup:
 
 
 func _ready() -> void:
+	if !config_file:
+		config_file = ConfigFile.new()
 	if !config_path.empty():
 		config_file.load(config_path)
 	for preset in presets:
