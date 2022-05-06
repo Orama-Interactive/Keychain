@@ -22,16 +22,13 @@ func _input(event: InputEvent) -> void:
 	if event.pressed:
 		listened_input = event
 		entered_shortcut.text = OS.get_scancode_string(event.get_scancode_with_modifiers())
-		_show_if_assigned(event)
+		_show_assigned_state(event)
 
 
-func _show_if_assigned(event: InputEvent) -> void:
+func _show_assigned_state(event: InputEvent) -> void:
 	var matching_pair: Array = _find_matching_event_in_map(event)
 	if matching_pair:
-		already_exists.text = (
-			"Already assigned to: %s"
-			% root.get_action_name(matching_pair[0])
-		)
+		already_exists.text = "Already assigned to: %s" % root.get_action_name(matching_pair[0])
 	else:
 		already_exists.text = ""
 
@@ -139,4 +136,4 @@ func _on_OptionButton_item_selected(index: int) -> void:
 		listened_input = InputEventJoypadMotion.new()
 		listened_input.axis = index / 2
 		listened_input.axis_value = -1.0 if index % 2 == 0 else 1.0
-	_show_if_assigned(listened_input)
+	_show_assigned_state(listened_input)
