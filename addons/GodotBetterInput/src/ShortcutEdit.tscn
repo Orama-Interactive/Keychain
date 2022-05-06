@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://addons/GodotBetterInput/src/ShortcutEdit.gd" type="Script" id=1]
 [ext_resource path="res://addons/GodotBetterInput/assets/joy_button.svg" type="Texture" id=2]
 [ext_resource path="res://addons/GodotBetterInput/assets/keyboard.svg" type="Texture" id=3]
 [ext_resource path="res://addons/GodotBetterInput/assets/joy_axis.svg" type="Texture" id=4]
 [ext_resource path="res://addons/GodotBetterInput/assets/mouse.svg" type="Texture" id=5]
+[ext_resource path="res://addons/GodotBetterInput/src/ShortcutSelectorDialog.tscn" type="PackedScene" id=6]
 
 [node name="ShortcutEdit" type="Control"]
 anchor_right = 1.0
@@ -46,113 +47,17 @@ margin_right = 20.0
 margin_bottom = 20.0
 items = [ "Key", ExtResource( 3 ), 0, false, false, 0, 0, null, "", false, "Mouse Button", ExtResource( 5 ), 0, false, false, 1, 0, null, "", false, "Joy Button", ExtResource( 2 ), 0, false, false, 2, 0, null, "", false, "Joy Axis", ExtResource( 4 ), 0, false, false, 3, 0, null, "", false ]
 
-[node name="KeyboardShortcutSelector" type="ConfirmationDialog" parent="."]
-margin_right = 200.0
-margin_bottom = 70.0
-popup_exclusive = true
-window_title = "Set the shortcut"
+[node name="KeyboardShortcutSelectorDialog" parent="." instance=ExtResource( 6 )]
 
-[node name="VBoxContainer" type="VBoxContainer" parent="KeyboardShortcutSelector"]
-margin_left = 8.0
-margin_top = 8.0
-margin_right = 341.0
-margin_bottom = 40.0
+[node name="MouseShortcutSelectorDialog" parent="." instance=ExtResource( 6 )]
+dialog_type = 1
 
-[node name="Label" type="Label" parent="KeyboardShortcutSelector/VBoxContainer"]
-margin_right = 333.0
-margin_bottom = 14.0
-text = "Press a key or a key combination to set the shortcut"
+[node name="JoyKeyShortcutSelectorDialog" parent="." instance=ExtResource( 6 )]
+dialog_type = 2
 
-[node name="EnteredShortcutLabel" type="Label" parent="KeyboardShortcutSelector/VBoxContainer"]
-margin_top = 18.0
-margin_right = 333.0
-margin_bottom = 32.0
-align = 1
-
-[node name="AlreadyExistsLabel" type="Label" parent="KeyboardShortcutSelector/VBoxContainer"]
-margin_top = 18.0
-margin_right = 333.0
-margin_bottom = 32.0
-align = 1
-
-[node name="MouseShortcutSelector" type="ConfirmationDialog" parent="."]
-margin_right = 200.0
-margin_bottom = 70.0
-window_title = "Set the shortcut"
-
-[node name="VBoxContainer" type="VBoxContainer" parent="MouseShortcutSelector"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_left = 8.0
-margin_top = 8.0
-margin_right = -8.0
-margin_bottom = -36.0
-
-[node name="Label" type="Label" parent="MouseShortcutSelector/VBoxContainer"]
-margin_right = 200.0
-margin_bottom = 14.0
-text = "Mouse Button Index:"
-
-[node name="OptionButton" type="OptionButton" parent="MouseShortcutSelector/VBoxContainer"]
-margin_top = 18.0
-margin_right = 200.0
-margin_bottom = 38.0
-mouse_default_cursor_shape = 2
-
-[node name="JoyKeyShortcutSelector" type="ConfirmationDialog" parent="."]
-margin_right = 200.0
-margin_bottom = 70.0
-window_title = "Set the shortcut"
-
-[node name="VBoxContainer" type="VBoxContainer" parent="JoyKeyShortcutSelector"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_left = 8.0
-margin_top = 8.0
-margin_right = -8.0
-margin_bottom = -36.0
-
-[node name="Label" type="Label" parent="JoyKeyShortcutSelector/VBoxContainer"]
-margin_right = 200.0
-margin_bottom = 14.0
-text = "Mouse Button Index:"
-
-[node name="OptionButton" type="OptionButton" parent="JoyKeyShortcutSelector/VBoxContainer"]
-margin_top = 18.0
-margin_right = 200.0
-margin_bottom = 38.0
-mouse_default_cursor_shape = 2
-
-[node name="JoyAxisShortcutSelector" type="ConfirmationDialog" parent="."]
-margin_right = 200.0
-margin_bottom = 70.0
-window_title = "Set the shortcut"
-
-[node name="VBoxContainer" type="VBoxContainer" parent="JoyAxisShortcutSelector"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_left = 8.0
-margin_top = 8.0
-margin_right = -8.0
-margin_bottom = -36.0
-
-[node name="Label" type="Label" parent="JoyAxisShortcutSelector/VBoxContainer"]
-margin_right = 200.0
-margin_bottom = 14.0
-text = "Mouse Button Index:"
-
-[node name="OptionButton" type="OptionButton" parent="JoyAxisShortcutSelector/VBoxContainer"]
-margin_top = 18.0
-margin_right = 200.0
-margin_bottom = 38.0
-mouse_default_cursor_shape = 2
+[node name="JoyAxisShortcutSelectorDialog" parent="." instance=ExtResource( 6 )]
+dialog_type = 3
 
 [connection signal="button_pressed" from="VBoxContainer/ShortcutTree" to="." method="_on_ShortcutTree_button_pressed"]
 [connection signal="item_activated" from="VBoxContainer/ShortcutTree" to="." method="_on_ShortcutTree_item_activated"]
 [connection signal="id_pressed" from="ShortcutTypeMenu" to="." method="_on_ShortcutTypeMenu_id_pressed"]
-[connection signal="about_to_show" from="KeyboardShortcutSelector" to="." method="_on_KeyboardShortcutSelector_about_to_show"]
-[connection signal="confirmed" from="KeyboardShortcutSelector" to="." method="_on_KeyboardShortcutSelector_confirmed"]
-[connection signal="popup_hide" from="KeyboardShortcutSelector" to="." method="_on_KeyboardShortcutSelector_popup_hide"]
-[connection signal="confirmed" from="MouseShortcutSelector" to="." method="_on_MouseShortcutSelector_confirmed"]
-[connection signal="confirmed" from="JoyKeyShortcutSelector" to="." method="_on_JoyKeyShortcutSelector_confirmed"]
-[connection signal="confirmed" from="JoyAxisShortcutSelector" to="." method="_on_JoyAxisShortcutSelector_confirmed"]

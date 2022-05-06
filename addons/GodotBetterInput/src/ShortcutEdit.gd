@@ -82,8 +82,6 @@ var groups := {
 	"Child": InputGroup.new("Parent"),
 }
 var currently_editing_tree_item: TreeItem
-var listening_for_input: int = KEYBOARD
-var listened_input: InputEvent
 
 # Textures taken from Godot https://github.com/godotengine/godot/tree/master/editor/icons
 var add_tex: Texture = preload("res://addons/GodotBetterInput/assets/add.svg")
@@ -99,12 +97,10 @@ var folder_tex: Texture = preload("res://addons/GodotBetterInput/assets/folder.s
 
 onready var tree: Tree = $VBoxContainer/ShortcutTree
 onready var shortcut_type_menu: PopupMenu = $ShortcutTypeMenu
-onready var keyboard_shortcut_selector: ConfirmationDialog = $KeyboardShortcutSelector
-onready var mouse_shortcut_selector: ConfirmationDialog = $MouseShortcutSelector
-onready var joy_key_shortcut_selector: ConfirmationDialog = $JoyKeyShortcutSelector
-onready var joy_axis_shortcut_selector: ConfirmationDialog = $JoyAxisShortcutSelector
-onready var key_shortcut_label: Label = keyboard_shortcut_selector.find_node("EnteredShortcutLabel")
-onready var key_exists_label: Label = keyboard_shortcut_selector.find_node("AlreadyExistsLabel")
+onready var keyboard_shortcut_selector: ConfirmationDialog = $KeyboardShortcutSelectorDialog
+onready var mouse_shortcut_selector: ConfirmationDialog = $MouseShortcutSelectorDialog
+onready var joy_key_shortcut_selector: ConfirmationDialog = $JoyKeyShortcutSelectorDialog
+onready var joy_axis_shortcut_selector: ConfirmationDialog = $JoyAxisShortcutSelectorDialog
 
 
 class InputAction:
@@ -127,7 +123,6 @@ class InputGroup:
 
 
 func _ready() -> void:
-	set_process_input(false)
 	_fill_selector_options()
 	var i := 0
 	for type in changeable_types:
@@ -147,7 +142,7 @@ func _ready() -> void:
 		if ignore_ui_actions and action.begins_with("ui_"):
 			continue
 
-		var display_name := _get_action_name(action)
+		var display_name := get_action_name(action)
 		var group_name := ""
 		if action in actions:
 			var input_action: InputAction = actions[action]
@@ -166,39 +161,28 @@ func _ready() -> void:
 		tree_item.set_metadata(0, action)
 		tree_item.set_icon(0, shortcut_tex)
 		for event in InputMap.get_action_list(action):
-			_add_event_tree_item(event, tree_item)
+			add_event_tree_item(event, tree_item)
 
 		tree_item.add_button(0, add_tex, 0, false, "Add")
 		tree_item.add_button(0, delete_tex, 1, false, "Delete")
 		tree_item.collapsed = true
 
 
-func _input(event: InputEvent) -> void:
-	if listening_for_input == KEYBOARD and not event is InputEventKey:
-		return
-	if event.pressed:
-		listened_input = event
-		key_shortcut_label.text = OS.get_scancode_string(event.get_scancode_with_modifiers())
-		var matching_pair := _find_matching_event_in_map(event)
-		if matching_pair:
-			key_exists_label.text = "Already assigned to: %s" % _get_action_name(matching_pair[0])
-		else:
-			key_exists_label.text = ""
-
-
 func _fill_selector_options() -> void:
-	var mouse_option_button: OptionButton = mouse_shortcut_selector.find_node("OptionButton")
+	keyboard_shortcut_selector.entered_shortcut.visible = true
+	keyboard_shortcut_selector.option_button.visible = false
+	var mouse_option_button: OptionButton = mouse_shortcut_selector.option_button
 	for option in MOUSE_BUTTON_NAMES:
 		mouse_option_button.add_item(option)
 
-	var joy_key_option_button: OptionButton = joy_key_shortcut_selector.find_node("OptionButton")
+	var joy_key_option_button: OptionButton = joy_key_shortcut_selector.option_button
 	for i in JOY_BUTTON_MAX:
 		var text: String = "Button %s" % i
 		if i < JOY_BUTTON_NAMES.size():
 			text += " (%s)" % JOY_BUTTON_NAMES[i]
 		joy_key_option_button.add_item(text)
 
-	var joy_axis_option_button: OptionButton = joy_axis_shortcut_selector.find_node("OptionButton")
+	var joy_axis_option_button: OptionButton = joy_axis_shortcut_selector.option_button
 	var i := 0.0
 	for option in JOY_AXIS_NAMES:
 		var sign_symbol = "+" if floor(i) != i else "-"
@@ -223,7 +207,7 @@ func _create_group_tree_item(group: InputGroup, group_name: String) -> void:
 	group.tree_item = group_root
 
 
-func _get_action_name(action: String) -> String:
+func get_action_name(action: String) -> String:
 	var display_name := ""
 	if action in actions:
 		display_name = actions[action].display_name
@@ -242,9 +226,9 @@ func _humanize_snake_case(text: String) -> String:
 	return text
 
 
-func _add_event_tree_item(event: InputEvent, action_tree_item: TreeItem) -> void:
+func add_event_tree_item(event: InputEvent, action_tree_item: TreeItem) -> void:
 	var event_tree_item: TreeItem = tree.create_item(action_tree_item)
-	event_tree_item.set_text(0, _event_to_str(event))
+	event_tree_item.set_text(0, event_to_str(event))
 	event_tree_item.set_metadata(0, event)
 	match event.get_class():
 		"InputEventJoypadMotion":
@@ -263,7 +247,7 @@ func _add_event_tree_item(event: InputEvent, action_tree_item: TreeItem) -> void
 	event_tree_item.add_button(0, delete_tex, 1, false, "Delete")
 
 
-func _event_to_str(event: InputEvent) -> String:
+func event_to_str(event: InputEvent) -> String:
 	var output := ""
 	if event is InputEventKey:
 		var scancode: int = event.get_scancode_with_modifiers()
@@ -339,130 +323,3 @@ func _on_ShortcutTypeMenu_id_pressed(id: int) -> void:
 		joy_key_shortcut_selector.popup_centered()
 	elif id == JOY_AXIS:
 		joy_axis_shortcut_selector.popup_centered()
-
-
-func _apply_shortcut_change(input_type: int, value: int) -> void:
-	var new_input: InputEvent
-	if input_type == MOUSE:
-		new_input = InputEventMouseButton.new()
-		new_input.button_index = value + 1
-	elif input_type == JOY_BUTTON:
-		new_input = InputEventJoypadButton.new()
-		new_input.button_index = value
-	elif input_type == JOY_AXIS:
-		new_input = InputEventJoypadMotion.new()
-		new_input.axis = value / 2
-		new_input.axis_value = -1.0 if value % 2 == 0 else 1.0
-
-	var metadata = currently_editing_tree_item.get_metadata(0)
-	# If metadata is InputEvent, we are editing an input event.
-	# If it's a string, we are adding a new input event to an action.
-	if metadata is InputEvent:
-		var parent_metadata = currently_editing_tree_item.get_parent().get_metadata(0)
-		var changed := _set_shortcut(parent_metadata, metadata, new_input)
-		if !changed:
-			return
-		currently_editing_tree_item.set_metadata(0, new_input)
-		currently_editing_tree_item.set_text(0, _event_to_str(new_input))
-	elif metadata is String:
-		var changed := _set_shortcut(metadata, null, new_input)
-		if !changed:
-			return
-		_add_event_tree_item(new_input, currently_editing_tree_item)
-
-
-func _set_shortcut(action: String, old_event: InputEvent, new_event: InputEvent) -> bool:
-	if InputMap.action_has_event(action, new_event):  # If the current action already has that event
-		return false
-	if old_event:
-		InputMap.action_erase_event(action, old_event)
-
-	# Loop through other actions to see if the event exists there, to re-assign it
-	var matching_pair := _find_matching_event_in_map(new_event)
-
-	if matching_pair:
-		var action_to_replace: String = matching_pair[0]
-		var input_to_replace: InputEvent = matching_pair[1]
-		InputMap.action_erase_event(action_to_replace, input_to_replace)
-		var tree_item: TreeItem = tree.get_root()
-		var prev_tree_item: TreeItem
-		while tree_item != null:  # Loop through Tree's TreeItems...
-			var metadata = tree_item.get_metadata(0)
-			if metadata is InputEvent:
-				if input_to_replace.shortcut_match(metadata):
-					tree_item.free()
-					break
-
-			tree_item = _get_next_tree_item(tree_item)
-
-	InputMap.action_add_event(action, new_event)
-	return true
-
-
-func _find_matching_event_in_map(event: InputEvent) -> Array:
-	for action in InputMap.get_actions():
-		if action in ignore_actions:
-			continue
-		if ignore_ui_actions and action.begins_with("ui_"):
-			continue
-		for input_event in InputMap.get_action_list(action):
-			if event.shortcut_match(input_event):
-				return [action, input_event]
-
-	return []
-
-
-# Algorithm based on https://github.com/godotengine/godot/blob/master/scene/gui/tree.cpp#L685
-func _get_next_tree_item(current: TreeItem) -> TreeItem:
-	if current.get_children():
-		current = current.get_children()
-	elif current.get_next():
-		current = current.get_next()
-	else:
-		while current and !current.get_next():
-			current = current.get_parent()
-		if current:
-			current = current.get_next()
-	return current
-
-
-func _on_KeyboardShortcutSelector_about_to_show() -> void:
-	listening_for_input = KEYBOARD
-	listened_input = null
-	key_shortcut_label.text = ""
-	key_exists_label.text = ""
-	set_process_input(true)
-
-
-func _on_KeyboardShortcutSelector_popup_hide() -> void:
-	set_process_input(false)
-
-
-func _on_KeyboardShortcutSelector_confirmed() -> void:
-	if listened_input == null:
-		return
-	var metadata = currently_editing_tree_item.get_metadata(0)
-	if metadata is InputEvent:  # Editing an input event
-		var parent_metadata = currently_editing_tree_item.get_parent().get_metadata(0)
-		var changed := _set_shortcut(parent_metadata, metadata, listened_input)
-		if !changed:
-			return
-		currently_editing_tree_item.set_metadata(0, listened_input)
-		currently_editing_tree_item.set_text(0, _event_to_str(listened_input))
-	elif metadata is String:  # Adding a new input event to an action
-		var changed := _set_shortcut(metadata, null, listened_input)
-		if !changed:
-			return
-		_add_event_tree_item(listened_input, currently_editing_tree_item)
-
-
-func _on_MouseShortcutSelector_confirmed() -> void:
-	_apply_shortcut_change(MOUSE, mouse_shortcut_selector.find_node("OptionButton").selected)
-
-
-func _on_JoyKeyShortcutSelector_confirmed() -> void:
-	_apply_shortcut_change(JOY_BUTTON, joy_key_shortcut_selector.find_node("OptionButton").selected)
-
-
-func _on_JoyAxisShortcutSelector_confirmed() -> void:
-	_apply_shortcut_change(JOY_AXIS, joy_axis_shortcut_selector.find_node("OptionButton").selected)
