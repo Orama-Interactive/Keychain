@@ -69,6 +69,12 @@ margin_right = 333.0
 margin_bottom = 32.0
 align = 1
 
+[node name="AlreadyExistsLabel" type="Label" parent="KeyboardShortcutSelector/VBoxContainer"]
+margin_top = 18.0
+margin_right = 333.0
+margin_bottom = 32.0
+align = 1
+
 [node name="MouseShortcutSelector" type="ConfirmationDialog" parent="."]
 margin_right = 200.0
 margin_bottom = 70.0

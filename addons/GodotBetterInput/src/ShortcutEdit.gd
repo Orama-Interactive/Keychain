@@ -104,6 +104,7 @@ onready var mouse_shortcut_selector: ConfirmationDialog = $MouseShortcutSelector
 onready var joy_key_shortcut_selector: ConfirmationDialog = $JoyKeyShortcutSelector
 onready var joy_axis_shortcut_selector: ConfirmationDialog = $JoyAxisShortcutSelector
 onready var key_shortcut_label: Label = keyboard_shortcut_selector.find_node("EnteredShortcutLabel")
+onready var key_exists_label: Label = keyboard_shortcut_selector.find_node("AlreadyExistsLabel")
 
 
 class InputAction:
@@ -146,15 +147,11 @@ func _ready() -> void:
 		if ignore_ui_actions and action.begins_with("ui_"):
 			continue
 
-		var display_name := ""
+		var display_name := _get_action_name(action)
 		var group_name := ""
 		if action in actions:
 			var input_action: InputAction = actions[action]
-			display_name = input_action.display_name
 			group_name = input_action.group
-
-		if display_name.empty():
-			display_name = _humanize_snake_case(action)
 
 		var tree_item: TreeItem
 		if group_name and group_name in groups:
@@ -182,6 +179,11 @@ func _input(event: InputEvent) -> void:
 	if event.pressed:
 		listened_input = event
 		key_shortcut_label.text = OS.get_scancode_string(event.get_scancode_with_modifiers())
+		var matching_pair := _find_matching_event_in_map(event)
+		if matching_pair:
+			key_exists_label.text = "Already assigned to: %s" % _get_action_name(matching_pair[0])
+		else:
+			key_exists_label.text = ""
 
 
 func _fill_selector_options() -> void:
@@ -219,6 +221,16 @@ func _create_group_tree_item(group: InputGroup, group_name: String) -> void:
 	group_root.set_text(0, group_name)
 	group_root.set_icon(0, folder_tex)
 	group.tree_item = group_root
+
+
+func _get_action_name(action: String) -> String:
+	var display_name := ""
+	if action in actions:
+		display_name = actions[action].display_name
+
+	if display_name.empty():
+		display_name = _humanize_snake_case(action)
+	return display_name
 
 
 func _humanize_snake_case(text: String) -> String:
@@ -366,19 +378,12 @@ func _set_shortcut(action: String, old_event: InputEvent, new_event: InputEvent)
 		InputMap.action_erase_event(action, old_event)
 
 	# Loop through other actions to see if the event exists there, to re-assign it
-	var input_to_replace: InputEvent
-	for other_action in InputMap.get_actions():
-		if other_action in ignore_actions:
-			continue
-		if ignore_ui_actions and other_action.begins_with("ui_"):
-			continue
-		for input_event in InputMap.get_action_list(other_action):
-			if new_event.shortcut_match(input_event):
-				input_to_replace = input_event
-				InputMap.action_erase_event(other_action, input_event)
-				break
+	var matching_pair := _find_matching_event_in_map(new_event)
 
-	if input_to_replace:
+	if matching_pair:
+		var action_to_replace: String = matching_pair[0]
+		var input_to_replace: InputEvent = matching_pair[1]
+		InputMap.action_erase_event(action_to_replace, input_to_replace)
 		var tree_item: TreeItem = tree.get_root()
 		var prev_tree_item: TreeItem
 		while tree_item != null:  # Loop through Tree's TreeItems...
@@ -392,6 +397,19 @@ func _set_shortcut(action: String, old_event: InputEvent, new_event: InputEvent)
 
 	InputMap.action_add_event(action, new_event)
 	return true
+
+
+func _find_matching_event_in_map(event: InputEvent) -> Array:
+	for action in InputMap.get_actions():
+		if action in ignore_actions:
+			continue
+		if ignore_ui_actions and action.begins_with("ui_"):
+			continue
+		for input_event in InputMap.get_action_list(action):
+			if event.shortcut_match(input_event):
+				return [action, input_event]
+
+	return []
 
 
 # Algorithm based on https://github.com/godotengine/godot/blob/master/scene/gui/tree.cpp#L685
@@ -412,6 +430,7 @@ func _on_KeyboardShortcutSelector_about_to_show() -> void:
 	listening_for_input = KEYBOARD
 	listened_input = null
 	key_shortcut_label.text = ""
+	key_exists_label.text = ""
 	set_process_input(true)
 
 
