@@ -109,10 +109,12 @@ onready var key_shortcut_label: Label = keyboard_shortcut_selector.find_node("En
 class InputAction:
 	var display_name := ""
 	var group := ""
+	var global := true
 
-	func _init(_display_name := "", _group := "") -> void:
+	func _init(_display_name := "", _group := "", _global := true) -> void:
 		display_name = _display_name
 		group = _group
+		global = _global
 
 
 class InputGroup:
@@ -288,8 +290,7 @@ func _on_ShortcutTree_button_pressed(item: TreeItem, _column: int, id: int) -> v
 			rect.size = Vector2(110, 23 * shortcut_type_menu.get_item_count())
 			shortcut_type_menu.popup(rect)
 		elif id == 1:  # Delete
-			for event in InputMap.get_action_list(action):
-				InputMap.action_erase_event(action, event)
+			InputMap.action_erase_events(action)
 			var child := item.get_children()
 			while child != null:
 				child.free()
@@ -359,12 +360,52 @@ func _apply_shortcut_change(input_type: int, value: int) -> void:
 
 
 func _set_shortcut(action: String, old_event: InputEvent, new_event: InputEvent) -> bool:
-	if InputMap.action_has_event(action, new_event):
+	if InputMap.action_has_event(action, new_event):  # If the current action already has that event
 		return false
 	if old_event:
 		InputMap.action_erase_event(action, old_event)
+
+	# Loop through other actions to see if the event exists there, to re-assign it
+	var input_to_replace: InputEvent
+	for other_action in InputMap.get_actions():
+		if other_action in ignore_actions:
+			continue
+		if ignore_ui_actions and other_action.begins_with("ui_"):
+			continue
+		for input_event in InputMap.get_action_list(other_action):
+			if new_event.shortcut_match(input_event):
+				input_to_replace = input_event
+				InputMap.action_erase_event(other_action, input_event)
+				break
+
+	if input_to_replace:
+		var tree_item: TreeItem = tree.get_root()
+		var prev_tree_item: TreeItem
+		while tree_item != null:  # Loop through Tree's TreeItems...
+			var metadata = tree_item.get_metadata(0)
+			if metadata is InputEvent:
+				if input_to_replace.shortcut_match(metadata):
+					tree_item.free()
+					break
+
+			tree_item = _get_next_tree_item(tree_item)
+
 	InputMap.action_add_event(action, new_event)
 	return true
+
+
+# Algorithm based on https://github.com/godotengine/godot/blob/master/scene/gui/tree.cpp#L685
+func _get_next_tree_item(current: TreeItem) -> TreeItem:
+	if current.get_children():
+		current = current.get_children()
+	elif current.get_next():
+		current = current.get_next()
+	else:
+		while current and !current.get_next():
+			current = current.get_parent()
+		if current:
+			current = current.get_next()
+	return current
 
 
 func _on_KeyboardShortcutSelector_about_to_show() -> void:
