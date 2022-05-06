@@ -92,16 +92,16 @@ var currently_editing_tree_item: TreeItem
 var config_file := ConfigFile.new()
 
 # Textures taken from Godot https://github.com/godotengine/godot/tree/master/editor/icons
-var add_tex: Texture = preload("res://addons/GodotBetterInput/assets/add.svg")
-var edit_tex: Texture = preload("res://addons/GodotBetterInput/assets/edit.svg")
-var delete_tex: Texture = preload("res://addons/GodotBetterInput/assets/close.svg")
-var joy_axis_tex: Texture = preload("res://addons/GodotBetterInput/assets/joy_axis.svg")
-var joy_button_tex: Texture = preload("res://addons/GodotBetterInput/assets/joy_button.svg")
-var key_tex: Texture = preload("res://addons/GodotBetterInput/assets/keyboard.svg")
-var key_phys_tex: Texture = preload("res://addons/GodotBetterInput/assets/keyboard_physical.svg")
-var mouse_tex: Texture = preload("res://addons/GodotBetterInput/assets/mouse.svg")
-var shortcut_tex: Texture = preload("res://addons/GodotBetterInput/assets/shortcut.svg")
-var folder_tex: Texture = preload("res://addons/GodotBetterInput/assets/folder.svg")
+var add_tex: Texture = preload("res://addons/godot_better_input/assets/add.svg")
+var edit_tex: Texture = preload("res://addons/godot_better_input/assets/edit.svg")
+var delete_tex: Texture = preload("res://addons/godot_better_input/assets/close.svg")
+var joy_axis_tex: Texture = preload("res://addons/godot_better_input/assets/joy_axis.svg")
+var joy_button_tex: Texture = preload("res://addons/godot_better_input/assets/joy_button.svg")
+var key_tex: Texture = preload("res://addons/godot_better_input/assets/keyboard.svg")
+var key_phys_tex: Texture = preload("res://addons/godot_better_input/assets/keyboard_physical.svg")
+var mouse_tex: Texture = preload("res://addons/godot_better_input/assets/mouse.svg")
+var shortcut_tex: Texture = preload("res://addons/godot_better_input/assets/shortcut.svg")
+var folder_tex: Texture = preload("res://addons/godot_better_input/assets/folder.svg")
 
 onready var tree: Tree = $VBoxContainer/ShortcutTree
 onready var presets_option_button: OptionButton = find_node("PresetsOptionButton")

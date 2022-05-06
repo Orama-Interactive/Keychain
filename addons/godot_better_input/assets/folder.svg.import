@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/folder.svg-efcb3368016048981234e330620bdda5.stex"
+path="res://.import/folder.svg-2c8a60ddb2091a8e99b0e2d5526a7cd3.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/GodotBetterInput/assets/folder.svg"
-dest_files=[ "res://.import/folder.svg-efcb3368016048981234e330620bdda5.stex" ]
+source_file="res://addons/godot_better_input/assets/folder.svg"
+dest_files=[ "res://.import/folder.svg-2c8a60ddb2091a8e99b0e2d5526a7cd3.stex" ]
 
 [params]
 
