@@ -70,7 +70,7 @@ export(Array, bool) var changeable_types := [true, true, true, false]
 var actions := {
 	"test_action": InputAction.new("Test Action", "GroupOne"),
 	"input": InputAction.new("Input"),
-	"nicer_input": InputAction.new("Nicer input", "GroupOne"),
+	"nicer_input": InputAction.new("", "GroupOne"),
 	"hello": InputAction.new("Howdy!", "Test"),
 	"grandchild": InputAction.new("Grandchild Action", "Child"),
 	"sibling": InputAction.new("Sibling", "Child"),
@@ -110,7 +110,7 @@ class InputAction:
 	var display_name := ""
 	var group := ""
 
-	func _init(_display_name: String, _group := "") -> void:
+	func _init(_display_name := "", _group := "") -> void:
 		display_name = _display_name
 		group = _group
 
@@ -138,18 +138,21 @@ func _ready() -> void:
 		var input_group: InputGroup = groups[group]
 		_create_group_tree_item(input_group, group)
 
-	for action in InputMap.get_actions():
+	for action in InputMap.get_actions():  # Fill the tree with actions and their events
 		if action in ignore_actions:
 			continue
 		if ignore_ui_actions and action.begins_with("ui_"):
 			continue
 
-		var display_name := action as String
+		var display_name := ""
 		var group_name := ""
 		if action in actions:
 			var input_action: InputAction = actions[action]
 			display_name = input_action.display_name
 			group_name = input_action.group
+
+		if display_name.empty():
+			display_name = _humanize_snake_case(action)
 
 		var tree_item: TreeItem
 		if group_name and group_name in groups:
@@ -214,6 +217,16 @@ func _create_group_tree_item(group: InputGroup, group_name: String) -> void:
 	group_root.set_text(0, group_name)
 	group_root.set_icon(0, folder_tex)
 	group.tree_item = group_root
+
+
+
+func _humanize_snake_case(text: String) -> String:
+	text = text.replace("_", " ")
+	var first_letter := text.left(1)
+	first_letter = first_letter.capitalize()
+	text.erase(0, 1)
+	text = text.insert(0, first_letter)
+	return text
 
 
 func _add_event_tree_item(event: InputEvent, action_tree_item: TreeItem) -> void:
