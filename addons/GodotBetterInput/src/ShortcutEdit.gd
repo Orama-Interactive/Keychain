@@ -115,9 +115,9 @@ class Preset:
 	var default := true
 	var bindings := {}
 
-	func _init(_name := "", _changeable := true) -> void:
+	func _init(_name := "", _default := true) -> void:
 		name = _name
-		default = _changeable
+		default = _default
 
 		for action in InputMap.get_actions():
 			bindings[action] = InputMap.get_action_list(action)
@@ -259,15 +259,26 @@ func _humanize_snake_case(text: String) -> String:
 
 
 func add_event_tree_item(event: InputEvent, action_tree_item: TreeItem) -> void:
+	var event_class := event.get_class()
+	match event_class:
+		"InputEventKey":
+			if !changeable_types[0]:
+				return
+		"InputEventMouseButton":
+			if !changeable_types[1]:
+				return
+		"InputEventJoypadButton":
+			if !changeable_types[2]:
+				return
+		"InputEventJoypadMotion":
+			if !changeable_types[3]:
+				return
+
 	var buttons_disabled := false if selected_preset.default else true
 	var event_tree_item: TreeItem = tree.create_item(action_tree_item)
 	event_tree_item.set_text(0, event_to_str(event))
 	event_tree_item.set_metadata(0, event)
-	match event.get_class():
-		"InputEventJoypadMotion":
-			event_tree_item.set_icon(0, joy_axis_tex)
-		"InputEventJoypadButton":
-			event_tree_item.set_icon(0, joy_button_tex)
+	match event_class:
 		"InputEventKey":
 			var scancode: int = event.get_scancode_with_modifiers()
 			if scancode > 0:
@@ -276,6 +287,10 @@ func add_event_tree_item(event: InputEvent, action_tree_item: TreeItem) -> void:
 				event_tree_item.set_icon(0, key_phys_tex)
 		"InputEventMouseButton":
 			event_tree_item.set_icon(0, mouse_tex)
+		"InputEventJoypadButton":
+			event_tree_item.set_icon(0, joy_button_tex)
+		"InputEventJoypadMotion":
+			event_tree_item.set_icon(0, joy_axis_tex)
 	event_tree_item.add_button(0, edit_tex, 0, buttons_disabled, "Edit")
 	event_tree_item.add_button(0, delete_tex, 1, buttons_disabled, "Delete")
 
