@@ -64,8 +64,9 @@ const JOY_AXIS_NAMES := [
 ]
 
 export(Array, String) var ignore_actions := []
-export(bool) var ignore_ui_actions := false
+export(bool) var ignore_ui_actions := true
 export(Array, bool) var changeable_types := [true, true, true, false]
+export(String) var config_path := "user://cache.ini"
 
 var presets := [Preset.new("Default", false), Preset.new("Custom")]
 var selected_preset: Preset = presets[0]
@@ -88,6 +89,7 @@ var groups := {
 	"Child": InputGroup.new("Parent"),
 }
 var currently_editing_tree_item: TreeItem
+var config_file := ConfigFile.new()
 
 # Textures taken from Godot https://github.com/godotengine/godot/tree/master/editor/icons
 var add_tex: Texture = preload("res://addons/GodotBetterInput/assets/add.svg")
@@ -112,18 +114,35 @@ onready var joy_axis_shortcut_selector: ConfirmationDialog = $JoyAxisShortcutSel
 
 class Preset:
 	var name := ""
-	var default := true
+	var customizable := true
 	var bindings := {}
+	var config_section := ""
+	var config_path := ""
+	var config_file: ConfigFile
 
-	func _init(_name := "", _default := true) -> void:
+	func _init(_name := "", _customizable := true) -> void:
 		name = _name
-		default = _default
+		customizable = _customizable
+		config_section = "shortcuts-%s" % name
 
 		for action in InputMap.get_actions():
 			bindings[action] = InputMap.get_action_list(action)
 
+	func load_from_file() -> void:
+		if !config_file:
+			return
+		if !customizable:
+			return
+		for action in bindings:
+			var action_list: Array = config_file.get_value(config_section, action, [])
+			if action_list:
+				bindings[action] = action_list
+
 	func change_action(action: String) -> void:
 		bindings[action] = InputMap.get_action_list(action)
+		if config_file and customizable:
+			config_file.set_value(config_section, action, bindings[action])
+			config_file.save(config_path)
 
 
 class InputAction:
@@ -146,7 +165,13 @@ class InputGroup:
 
 
 func _ready() -> void:
+	if !config_path.empty():
+		config_file.load(config_path)
 	for preset in presets:
+		if config_file:
+			preset.config_path = config_path
+			preset.config_file = config_file
+			preset.load_from_file()
 		presets_option_button.add_item(preset.name)
 	_fill_selector_options()
 
@@ -161,7 +186,7 @@ func _ready() -> void:
 
 
 func _construct_tree() -> void:
-	var buttons_disabled := false if selected_preset.default else true
+	var buttons_disabled := false if selected_preset.customizable else true
 	var tree_root: TreeItem = tree.create_item()
 	for group in groups:  # Create groups
 		var input_group: InputGroup = groups[group]
@@ -277,7 +302,7 @@ func add_event_tree_item(event: InputEvent, action_tree_item: TreeItem) -> void:
 			if !changeable_types[3]:
 				return
 
-	var buttons_disabled := false if selected_preset.default else true
+	var buttons_disabled := false if selected_preset.customizable else true
 	var event_tree_item: TreeItem = tree.create_item(action_tree_item)
 	event_tree_item.set_text(0, event_to_str(event))
 	event_tree_item.set_metadata(0, event)
