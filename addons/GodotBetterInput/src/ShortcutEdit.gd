@@ -65,6 +65,7 @@ const JOY_AXIS_NAMES := [
 
 export(Array, String) var ignore_actions := []
 export(bool) var ignore_ui_actions := false
+export(Array, bool) var changeable_types := [true, true, true, false]
 
 var actions := {
 	"test_action": InputAction.new("Test Action", "GroupOne"),
@@ -124,7 +125,13 @@ class InputGroup:
 
 func _ready() -> void:
 	set_process_input(false)
-	_fill_option_buttons()
+	_fill_selector_options()
+	var i := 0
+	for type in changeable_types:
+		if !type:
+			shortcut_type_menu.remove_item(i)
+		else:
+			i += 1
 
 	var tree_root: TreeItem = tree.create_item()
 	for group in groups:  # Create groups
@@ -172,7 +179,7 @@ func _input(event: InputEvent) -> void:
 		key_shortcut_label.text = OS.get_scancode_string(event.get_scancode_with_modifiers())
 
 
-func _fill_option_buttons() -> void:
+func _fill_selector_options() -> void:
 	var mouse_option_button: OptionButton = mouse_shortcut_selector.find_node("OptionButton")
 	for option in MOUSE_BUTTON_NAMES:
 		mouse_option_button.add_item(option)
@@ -266,7 +273,7 @@ func _on_ShortcutTree_button_pressed(item: TreeItem, _column: int, id: int) -> v
 			var rect: Rect2 = tree.get_item_area_rect(item, 0)
 			rect.position.x = rect.end.x
 			rect.position.y += 42 - tree.get_scroll().y
-			rect.size = Vector2(110, 92)
+			rect.size = Vector2(110, 23 * shortcut_type_menu.get_item_count())
 			shortcut_type_menu.popup(rect)
 		elif id == 1:  # Delete
 			for event in InputMap.get_action_list(action):
