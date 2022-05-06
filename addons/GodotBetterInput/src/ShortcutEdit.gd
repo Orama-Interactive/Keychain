@@ -311,27 +311,27 @@ func _on_ShortcutTypeMenu_id_pressed(id: int) -> void:
 
 func apply_shortcut_change(input_type: int, value: int) -> void:
 	var metadata = currently_editing_tree_item.get_metadata(0)
+	var new_input: InputEvent
 	if metadata is InputEvent:
-		if input_type == MOUSE:
-			metadata.button_index = value + 1
-		elif input_type == JOY_BUTTON:
-			metadata.button_index = value
-		elif input_type == JOY_AXIS:
-			metadata.axis = value / 2
-			metadata.axis_value = -1.0 if value % 2 == 0 else 1.0
-		currently_editing_tree_item.set_text(0, _event_to_str(metadata))
+		new_input = metadata
 	elif metadata is String:
-		var new_input: InputEvent
 		if input_type == MOUSE:
 			new_input = InputEventMouseButton.new()
-			new_input.button_index = value + 1
 		elif input_type == JOY_BUTTON:
 			new_input = InputEventJoypadButton.new()
-			new_input.button_index = value
 		elif input_type == JOY_AXIS:
 			new_input = InputEventJoypadMotion.new()
-			new_input.axis = value / 2
-			new_input.axis_value = -1.0 if value % 2 == 0 else 1.0
+	if input_type == MOUSE:
+		new_input.button_index = value + 1
+	elif input_type == JOY_BUTTON:
+		new_input.button_index = value
+	elif input_type == JOY_AXIS:
+		new_input.axis = value / 2
+		new_input.axis_value = -1.0 if value % 2 == 0 else 1.0
+
+	if metadata is InputEvent:
+		currently_editing_tree_item.set_text(0, _event_to_str(new_input))
+	elif metadata is String:
 		InputMap.action_add_event(metadata, new_input)
 		_add_event_tree_item(new_input, currently_editing_tree_item)
 
