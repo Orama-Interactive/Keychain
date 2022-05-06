@@ -122,6 +122,9 @@ class Preset:
 		for action in InputMap.get_actions():
 			bindings[action] = InputMap.get_action_list(action)
 
+	func change_action(action: String) -> void:
+		bindings[action] = InputMap.get_action_list(action)
+
 
 class InputAction:
 	var display_name := ""
@@ -335,7 +338,7 @@ func _on_ShortcutTree_button_pressed(item: TreeItem, _column: int, id: int) -> v
 			shortcut_type_menu.popup(rect)
 		elif id == 1:  # Delete
 			InputMap.action_erase_events(action)
-			selected_preset.bindings[action] = InputMap.get_action_list(action)
+			selected_preset.change_action(action)
 			var child := item.get_children()
 			while child != null:
 				child.free()
@@ -356,7 +359,7 @@ func _on_ShortcutTree_button_pressed(item: TreeItem, _column: int, id: int) -> v
 			if not parent_action is String:
 				return
 			InputMap.action_erase_event(parent_action, action)
-			selected_preset.bindings[parent_action] = InputMap.get_action_list(parent_action)
+			selected_preset.change_action(parent_action)
 			item.free()
 
 
