@@ -26,7 +26,14 @@ func _input(event: InputEvent) -> void:
 
 
 func _show_assigned_state(event: InputEvent) -> void:
-	var matching_pair: Array = _find_matching_event_in_map(event)
+	var metadata = root.currently_editing_tree_item.get_metadata(0)
+	var action := ""
+	if metadata is InputEvent:  # Editing an input event
+		action = root.currently_editing_tree_item.get_parent().get_metadata(0)
+	elif metadata is String:  # Adding a new input event to an action
+		action = metadata
+
+	var matching_pair: Array = _find_matching_event_in_map(action, event)
 	if matching_pair:
 		already_exists.text = "Already assigned to: %s" % root.get_action_name(matching_pair[0])
 	else:
@@ -62,9 +69,13 @@ func _set_shortcut(action: String, old_event: InputEvent, new_event: InputEvent)
 		InputMap.action_erase_event(action, old_event)
 
 	# Loop through other actions to see if the event exists there, to re-assign it
-	var matching_pair := _find_matching_event_in_map(new_event)
+	var matching_pair := _find_matching_event_in_map(action, new_event)
 
 	if matching_pair:
+		var group := ""
+		if action in root.actions:
+			group = root.actions[action].group
+
 		var action_to_replace: String = matching_pair[0]
 		var input_to_replace: InputEvent = matching_pair[1]
 		InputMap.action_erase_event(action_to_replace, input_to_replace)
@@ -74,6 +85,13 @@ func _set_shortcut(action: String, old_event: InputEvent, new_event: InputEvent)
 			var metadata = tree_item.get_metadata(0)
 			if metadata is InputEvent:
 				if input_to_replace.shortcut_match(metadata):
+					var map_action: String = tree_item.get_parent().get_metadata(0)
+					if map_action in root.actions:
+						# If it's local, check if it's the same group, otherwise ignore
+						if !root.actions[map_action].global:
+							if root.actions[map_action].group != group:
+								tree_item = _get_next_tree_item(tree_item)
+								continue
 					tree_item.free()
 					break
 
@@ -97,15 +115,25 @@ func _get_next_tree_item(current: TreeItem) -> TreeItem:
 	return current
 
 
-func _find_matching_event_in_map(event: InputEvent) -> Array:
-	for action in InputMap.get_actions():
-		if action in root.ignore_actions:
+func _find_matching_event_in_map(action: String, event: InputEvent) -> Array:
+	var group := ""
+	if action in root.actions:
+		group = root.actions[action].group
+
+	for map_action in InputMap.get_actions():
+		if map_action in root.ignore_actions:
 			continue
-		if root.ignore_ui_actions and action.begins_with("ui_"):
+		if root.ignore_ui_actions and map_action.begins_with("ui_"):
 			continue
-		for input_event in InputMap.get_action_list(action):
-			if event.shortcut_match(input_event):
-				return [action, input_event]
+		for map_event in InputMap.get_action_list(map_action):
+			if event.shortcut_match(map_event):
+				if map_action in root.actions:
+					# If it's local, check if it's the same group, otherwise ignore
+					if !root.actions[map_action].global:
+						if root.actions[map_action].group != group:
+							continue
+
+				return [map_action, map_event]
 
 	return []
 

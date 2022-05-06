@@ -69,14 +69,18 @@ export(Array, bool) var changeable_types := [true, true, true, false]
 
 var actions := {
 	"test_action": InputAction.new("Test Action", "GroupOne"),
-	"input": InputAction.new("Input"),
 	"nicer_input": InputAction.new("", "GroupOne"),
-	"hello": InputAction.new("Howdy!", "Test"),
+	"pixelorama": InputAction.new("Try Pixelorama!", "Parent"),
 	"grandchild": InputAction.new("Grandchild Action", "Child"),
 	"sibling": InputAction.new("Sibling", "Child"),
+	"local1": InputAction.new("", "GroupOne", false),
+	"local2": InputAction.new("", "GroupOne", false),
+	"local3": InputAction.new("", "GroupTwo", false),
+	"local4": InputAction.new("", "GroupTwo", false),
 }
 var groups := {
 	"GroupOne": InputGroup.new(),
+	"GroupTwo": InputGroup.new(),
 	"Grandparent": InputGroup.new(),
 	"Parent": InputGroup.new("Grandparent"),
 	"Child": InputGroup.new("Parent"),
