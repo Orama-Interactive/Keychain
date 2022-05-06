@@ -219,7 +219,6 @@ func _create_group_tree_item(group: InputGroup, group_name: String) -> void:
 	group.tree_item = group_root
 
 
-
 func _humanize_snake_case(text: String) -> String:
 	text = text.replace("_", " ")
 	var first_letter := text.left(1)
@@ -329,31 +328,43 @@ func _on_ShortcutTypeMenu_id_pressed(id: int) -> void:
 		joy_axis_shortcut_selector.popup_centered()
 
 
-func apply_shortcut_change(input_type: int, value: int) -> void:
-	var metadata = currently_editing_tree_item.get_metadata(0)
+func _apply_shortcut_change(input_type: int, value: int) -> void:
 	var new_input: InputEvent
-	if metadata is InputEvent:
-		new_input = metadata
-	elif metadata is String:
-		if input_type == MOUSE:
-			new_input = InputEventMouseButton.new()
-		elif input_type == JOY_BUTTON:
-			new_input = InputEventJoypadButton.new()
-		elif input_type == JOY_AXIS:
-			new_input = InputEventJoypadMotion.new()
 	if input_type == MOUSE:
+		new_input = InputEventMouseButton.new()
 		new_input.button_index = value + 1
 	elif input_type == JOY_BUTTON:
+		new_input = InputEventJoypadButton.new()
 		new_input.button_index = value
 	elif input_type == JOY_AXIS:
+		new_input = InputEventJoypadMotion.new()
 		new_input.axis = value / 2
 		new_input.axis_value = -1.0 if value % 2 == 0 else 1.0
 
+	var metadata = currently_editing_tree_item.get_metadata(0)
+	# If metadata is InputEvent, we are editing an input event.
+	# If it's a string, we are adding a new input event to an action.
 	if metadata is InputEvent:
+		var parent_metadata = currently_editing_tree_item.get_parent().get_metadata(0)
+		var changed := _set_shortcut(parent_metadata, metadata, new_input)
+		if !changed:
+			return
+		currently_editing_tree_item.set_metadata(0, new_input)
 		currently_editing_tree_item.set_text(0, _event_to_str(new_input))
 	elif metadata is String:
-		InputMap.action_add_event(metadata, new_input)
+		var changed := _set_shortcut(metadata, null, new_input)
+		if !changed:
+			return
 		_add_event_tree_item(new_input, currently_editing_tree_item)
+
+
+func _set_shortcut(action: String, old_event: InputEvent, new_event: InputEvent) -> bool:
+	if InputMap.action_has_event(action, new_event):
+		return false
+	if old_event:
+		InputMap.action_erase_event(action, old_event)
+	InputMap.action_add_event(action, new_event)
+	return true
 
 
 func _on_KeyboardShortcutSelector_about_to_show() -> void:
@@ -371,24 +382,27 @@ func _on_KeyboardShortcutSelector_confirmed() -> void:
 	if listened_input == null:
 		return
 	var metadata = currently_editing_tree_item.get_metadata(0)
-	if metadata is InputEvent:
+	if metadata is InputEvent:  # Editing an input event
 		var parent_metadata = currently_editing_tree_item.get_parent().get_metadata(0)
-		InputMap.action_erase_event(parent_metadata, metadata)
-		InputMap.action_add_event(parent_metadata, listened_input)
+		var changed := _set_shortcut(parent_metadata, metadata, listened_input)
+		if !changed:
+			return
 		currently_editing_tree_item.set_metadata(0, listened_input)
 		currently_editing_tree_item.set_text(0, _event_to_str(listened_input))
-	elif metadata is String:
-		InputMap.action_add_event(metadata, listened_input)
+	elif metadata is String:  # Adding a new input event to an action
+		var changed := _set_shortcut(metadata, null, listened_input)
+		if !changed:
+			return
 		_add_event_tree_item(listened_input, currently_editing_tree_item)
 
 
 func _on_MouseShortcutSelector_confirmed() -> void:
-	apply_shortcut_change(MOUSE, mouse_shortcut_selector.find_node("OptionButton").selected)
+	_apply_shortcut_change(MOUSE, mouse_shortcut_selector.find_node("OptionButton").selected)
 
 
 func _on_JoyKeyShortcutSelector_confirmed() -> void:
-	apply_shortcut_change(JOY_BUTTON, joy_key_shortcut_selector.find_node("OptionButton").selected)
+	_apply_shortcut_change(JOY_BUTTON, joy_key_shortcut_selector.find_node("OptionButton").selected)
 
 
 func _on_JoyAxisShortcutSelector_confirmed() -> void:
-	apply_shortcut_change(JOY_AXIS, joy_axis_shortcut_selector.find_node("OptionButton").selected)
+	_apply_shortcut_change(JOY_AXIS, joy_axis_shortcut_selector.find_node("OptionButton").selected)
