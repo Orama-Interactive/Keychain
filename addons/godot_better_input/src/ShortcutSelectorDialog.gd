@@ -5,7 +5,7 @@ enum InputTypes { KEYBOARD, MOUSE, JOY_BUTTON, JOY_AXIS }
 export(InputTypes) var input_type: int = InputTypes.KEYBOARD
 var listened_input: InputEvent
 
-onready var root: Node = get_tree().current_scene
+onready var root: Node = get_parent()
 onready var input_type_l: Label = $VBoxContainer/InputTypeLabel
 onready var entered_shortcut: Label = $VBoxContainer/EnteredShortcutLabel
 onready var option_button: OptionButton = $VBoxContainer/OptionButton
