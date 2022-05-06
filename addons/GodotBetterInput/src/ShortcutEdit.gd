@@ -67,6 +67,8 @@ export(Array, String) var ignore_actions := []
 export(bool) var ignore_ui_actions := false
 export(Array, bool) var changeable_types := [true, true, true, false]
 
+var presets := [Preset.new("Default", false), Preset.new("Custom")]
+var selected_preset: Preset = presets[0]
 var actions := {
 	"test_action": InputAction.new("Test Action", "GroupOne"),
 	"nicer_input": InputAction.new("", "GroupOne"),
@@ -100,11 +102,25 @@ var shortcut_tex: Texture = preload("res://addons/GodotBetterInput/assets/shortc
 var folder_tex: Texture = preload("res://addons/GodotBetterInput/assets/folder.svg")
 
 onready var tree: Tree = $VBoxContainer/ShortcutTree
+onready var presets_option_button: OptionButton = find_node("PresetsOptionButton")
 onready var shortcut_type_menu: PopupMenu = $ShortcutTypeMenu
 onready var keyboard_shortcut_selector: ConfirmationDialog = $KeyboardShortcutSelectorDialog
 onready var mouse_shortcut_selector: ConfirmationDialog = $MouseShortcutSelectorDialog
 onready var joy_key_shortcut_selector: ConfirmationDialog = $JoyKeyShortcutSelectorDialog
 onready var joy_axis_shortcut_selector: ConfirmationDialog = $JoyAxisShortcutSelectorDialog
+
+
+class Preset:
+	var name := ""
+	var default := true
+	var bindings := {}
+
+	func _init(_name := "", _changeable := true) -> void:
+		name = _name
+		default = _changeable
+
+		for action in InputMap.get_actions():
+			bindings[action] = InputMap.get_action_list(action)
 
 
 class InputAction:
@@ -127,7 +143,10 @@ class InputGroup:
 
 
 func _ready() -> void:
+	for preset in presets:
+		presets_option_button.add_item(preset.name)
 	_fill_selector_options()
+
 	var i := 0
 	for type in changeable_types:
 		if !type:
@@ -135,12 +154,17 @@ func _ready() -> void:
 		else:
 			i += 1
 
+	_construct_tree()
+
+
+func _construct_tree() -> void:
+	var buttons_disabled := false if selected_preset.default else true
 	var tree_root: TreeItem = tree.create_item()
 	for group in groups:  # Create groups
 		var input_group: InputGroup = groups[group]
 		_create_group_tree_item(input_group, group)
 
-	for action in InputMap.get_actions():  # Fill the tree with actions and their events
+	for action in selected_preset.bindings:  # Fill the tree with actions and their events
 		if action in ignore_actions:
 			continue
 		if ignore_ui_actions and action.begins_with("ui_"):
@@ -167,8 +191,8 @@ func _ready() -> void:
 		for event in InputMap.get_action_list(action):
 			add_event_tree_item(event, tree_item)
 
-		tree_item.add_button(0, add_tex, 0, false, "Add")
-		tree_item.add_button(0, delete_tex, 1, false, "Delete")
+		tree_item.add_button(0, add_tex, 0, buttons_disabled, "Add")
+		tree_item.add_button(0, delete_tex, 1, buttons_disabled, "Delete")
 		tree_item.collapsed = true
 
 
@@ -235,6 +259,7 @@ func _humanize_snake_case(text: String) -> String:
 
 
 func add_event_tree_item(event: InputEvent, action_tree_item: TreeItem) -> void:
+	var buttons_disabled := false if selected_preset.default else true
 	var event_tree_item: TreeItem = tree.create_item(action_tree_item)
 	event_tree_item.set_text(0, event_to_str(event))
 	event_tree_item.set_metadata(0, event)
@@ -251,8 +276,8 @@ func add_event_tree_item(event: InputEvent, action_tree_item: TreeItem) -> void:
 				event_tree_item.set_icon(0, key_phys_tex)
 		"InputEventMouseButton":
 			event_tree_item.set_icon(0, mouse_tex)
-	event_tree_item.add_button(0, edit_tex, 0, false, "Edit")
-	event_tree_item.add_button(0, delete_tex, 1, false, "Delete")
+	event_tree_item.add_button(0, edit_tex, 0, buttons_disabled, "Edit")
+	event_tree_item.add_button(0, delete_tex, 1, buttons_disabled, "Delete")
 
 
 func event_to_str(event: InputEvent) -> String:
@@ -295,6 +320,7 @@ func _on_ShortcutTree_button_pressed(item: TreeItem, _column: int, id: int) -> v
 			shortcut_type_menu.popup(rect)
 		elif id == 1:  # Delete
 			InputMap.action_erase_events(action)
+			selected_preset.bindings[action] = InputMap.get_action_list(action)
 			var child := item.get_children()
 			while child != null:
 				child.free()
@@ -315,11 +341,14 @@ func _on_ShortcutTree_button_pressed(item: TreeItem, _column: int, id: int) -> v
 			if not parent_action is String:
 				return
 			InputMap.action_erase_event(parent_action, action)
+			selected_preset.bindings[parent_action] = InputMap.get_action_list(parent_action)
 			item.free()
 
 
 func _on_ShortcutTree_item_activated() -> void:
-	_on_ShortcutTree_button_pressed(tree.get_selected(), 0, 0)
+	var selected_item: TreeItem = tree.get_selected()
+	if selected_item.get_button_count(0) > 0 and !selected_item.is_button_disabled(0, 0):
+		_on_ShortcutTree_button_pressed(tree.get_selected(), 0, 0)
 
 
 func _on_ShortcutTypeMenu_id_pressed(id: int) -> void:
@@ -331,3 +360,17 @@ func _on_ShortcutTypeMenu_id_pressed(id: int) -> void:
 		joy_key_shortcut_selector.popup_centered()
 	elif id == JOY_AXIS:
 		joy_axis_shortcut_selector.popup_centered()
+
+
+func _on_PresetsOptionButton_item_selected(index: int) -> void:
+	selected_preset = presets[index]
+	for action in selected_preset.bindings:
+		InputMap.action_erase_events(action)
+		for event in selected_preset.bindings[action]:
+			InputMap.action_add_event(action, event)
+
+	# Re-construct the tree
+	for group in groups:
+		groups[group].tree_item = null
+	tree.clear()
+	_construct_tree()

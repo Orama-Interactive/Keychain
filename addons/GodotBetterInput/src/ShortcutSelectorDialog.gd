@@ -71,6 +71,7 @@ func _set_shortcut(action: String, old_event: InputEvent, new_event: InputEvent)
 	# Loop through other actions to see if the event exists there, to re-assign it
 	var matching_pair := _find_matching_event_in_map(action, new_event)
 
+	var preset_bindings: Dictionary = root.selected_preset.bindings
 	if matching_pair:
 		var group := ""
 		if action in root.actions:
@@ -79,6 +80,7 @@ func _set_shortcut(action: String, old_event: InputEvent, new_event: InputEvent)
 		var action_to_replace: String = matching_pair[0]
 		var input_to_replace: InputEvent = matching_pair[1]
 		InputMap.action_erase_event(action_to_replace, input_to_replace)
+		preset_bindings[action_to_replace] = InputMap.get_action_list(action_to_replace)
 		var tree_item: TreeItem = root.tree.get_root()
 		var prev_tree_item: TreeItem
 		while tree_item != null:  # Loop through Tree's TreeItems...
@@ -98,6 +100,7 @@ func _set_shortcut(action: String, old_event: InputEvent, new_event: InputEvent)
 			tree_item = _get_next_tree_item(tree_item)
 
 	InputMap.action_add_event(action, new_event)
+	preset_bindings[action] = InputMap.get_action_list(action)
 	return true
 
 

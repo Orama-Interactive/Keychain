@@ -26,14 +26,11 @@ margin_right = 52.0
 margin_bottom = 17.0
 text = "Presets:"
 
-[node name="OptionButton" type="OptionButton" parent="VBoxContainer/HBoxContainer"]
+[node name="PresetsOptionButton" type="OptionButton" parent="VBoxContainer/HBoxContainer"]
 margin_left = 56.0
-margin_right = 131.0
+margin_right = 85.0
 margin_bottom = 20.0
 mouse_default_cursor_shape = 2
-text = "Default"
-items = [ "Default", null, false, 0, null, "Custom", null, false, 1, null ]
-selected = 0
 
 [node name="ShortcutTree" type="Tree" parent="VBoxContainer"]
 margin_top = 24.0
@@ -58,6 +55,7 @@ input_type = 2
 [node name="JoyAxisShortcutSelectorDialog" parent="." instance=ExtResource( 6 )]
 input_type = 3
 
+[connection signal="item_selected" from="VBoxContainer/HBoxContainer/PresetsOptionButton" to="." method="_on_PresetsOptionButton_item_selected"]
 [connection signal="button_pressed" from="VBoxContainer/ShortcutTree" to="." method="_on_ShortcutTree_button_pressed"]
 [connection signal="item_activated" from="VBoxContainer/ShortcutTree" to="." method="_on_ShortcutTree_item_activated"]
 [connection signal="id_pressed" from="ShortcutTypeMenu" to="." method="_on_ShortcutTypeMenu_id_pressed"]
