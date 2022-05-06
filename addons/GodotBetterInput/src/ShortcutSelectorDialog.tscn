@@ -42,3 +42,4 @@ align = 1
 [connection signal="about_to_show" from="." to="." method="_on_ShortcutSelectorDialog_about_to_show"]
 [connection signal="confirmed" from="." to="." method="_on_ShortcutSelectorDialog_confirmed"]
 [connection signal="popup_hide" from="." to="." method="_on_ShortcutSelectorDialog_popup_hide"]
+[connection signal="item_selected" from="VBoxContainer/OptionButton" to="." method="_on_OptionButton_item_selected"]

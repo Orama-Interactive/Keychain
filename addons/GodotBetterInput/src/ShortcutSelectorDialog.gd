@@ -1,18 +1,17 @@
 extends ConfirmationDialog
 
-enum InputType { KEYBOARD, MOUSE, JOY_BUTTON, JOY_AXIS }
+enum InputTypes { KEYBOARD, MOUSE, JOY_BUTTON, JOY_AXIS }
 
-export(InputType) var dialog_type: int = InputType.KEYBOARD
+export(InputTypes) var input_type: int = InputTypes.KEYBOARD
 var listened_input: InputEvent
 
 onready var root: Node = get_tree().current_scene
-onready var input_type: Label = $VBoxContainer/InputTypeLabel
+onready var input_type_l: Label = $VBoxContainer/InputTypeLabel
 onready var entered_shortcut: Label = $VBoxContainer/EnteredShortcutLabel
 onready var option_button: OptionButton = $VBoxContainer/OptionButton
 onready var already_exists: Label = $VBoxContainer/AlreadyExistsLabel
 
 
-# Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	set_process_input(false)
 
@@ -23,34 +22,24 @@ func _input(event: InputEvent) -> void:
 	if event.pressed:
 		listened_input = event
 		entered_shortcut.text = OS.get_scancode_string(event.get_scancode_with_modifiers())
-		var matching_pair: Array = _find_matching_event_in_map(event)
-		if matching_pair:
-			already_exists.text = (
-				"Already assigned to: %s"
-				% root.get_action_name(matching_pair[0])
-			)
-		else:
-			already_exists.text = ""
+		_show_if_assigned(event)
+
+
+func _show_if_assigned(event: InputEvent) -> void:
+	var matching_pair: Array = _find_matching_event_in_map(event)
+	if matching_pair:
+		already_exists.text = (
+			"Already assigned to: %s"
+			% root.get_action_name(matching_pair[0])
+		)
+	else:
+		already_exists.text = ""
 
 
 func _on_ShortcutSelectorDialog_confirmed() -> void:
-	var new_input: InputEvent
-	if dialog_type == InputType.KEYBOARD and listened_input:
-		new_input = listened_input
-	else:
-		var value: int = option_button.selected
-		if dialog_type == InputType.MOUSE:
-			new_input = InputEventMouseButton.new()
-			new_input.button_index = value + 1
-		elif dialog_type == InputType.JOY_BUTTON:
-			new_input = InputEventJoypadButton.new()
-			new_input.button_index = value
-		elif dialog_type == InputType.JOY_AXIS:
-			new_input = InputEventJoypadMotion.new()
-			new_input.axis = value / 2
-			new_input.axis_value = -1.0 if value % 2 == 0 else 1.0
-
-	_apply_shortcut_change(new_input)
+	if listened_input == null:
+		return
+	_apply_shortcut_change(listened_input)
 
 
 func _apply_shortcut_change(input_event: InputEvent) -> void:
@@ -125,11 +114,29 @@ func _find_matching_event_in_map(event: InputEvent) -> Array:
 
 
 func _on_ShortcutSelectorDialog_about_to_show() -> void:
-	listened_input = null
-	entered_shortcut.text = ""
-	already_exists.text = ""
+	if input_type == InputTypes.KEYBOARD:
+		listened_input = null
+		already_exists.text = ""
+		entered_shortcut.text = ""
+	else:
+		if !listened_input:
+			_on_OptionButton_item_selected(0)
 	set_process_input(true)
 
 
 func _on_ShortcutSelectorDialog_popup_hide() -> void:
 	set_process_input(false)
+
+
+func _on_OptionButton_item_selected(index: int) -> void:
+	if input_type == InputTypes.MOUSE:
+		listened_input = InputEventMouseButton.new()
+		listened_input.button_index = index + 1
+	elif input_type == InputTypes.JOY_BUTTON:
+		listened_input = InputEventJoypadButton.new()
+		listened_input.button_index = index
+	elif input_type == InputTypes.JOY_AXIS:
+		listened_input = InputEventJoypadMotion.new()
+		listened_input.axis = index / 2
+		listened_input.axis_value = -1.0 if index % 2 == 0 else 1.0
+	_show_if_assigned(listened_input)

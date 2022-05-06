@@ -50,13 +50,13 @@ items = [ "Key", ExtResource( 3 ), 0, false, false, 0, 0, null, "", false, "Mous
 [node name="KeyboardShortcutSelectorDialog" parent="." instance=ExtResource( 6 )]
 
 [node name="MouseShortcutSelectorDialog" parent="." instance=ExtResource( 6 )]
-dialog_type = 1
+input_type = 1
 
 [node name="JoyKeyShortcutSelectorDialog" parent="." instance=ExtResource( 6 )]
-dialog_type = 2
+input_type = 2
 
 [node name="JoyAxisShortcutSelectorDialog" parent="." instance=ExtResource( 6 )]
-dialog_type = 3
+input_type = 3
 
 [connection signal="button_pressed" from="VBoxContainer/ShortcutTree" to="." method="_on_ShortcutTree_button_pressed"]
 [connection signal="item_activated" from="VBoxContainer/ShortcutTree" to="." method="_on_ShortcutTree_item_activated"]

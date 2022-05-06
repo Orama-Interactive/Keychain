@@ -171,6 +171,10 @@ func _ready() -> void:
 func _fill_selector_options() -> void:
 	keyboard_shortcut_selector.entered_shortcut.visible = true
 	keyboard_shortcut_selector.option_button.visible = false
+	mouse_shortcut_selector.input_type_l.text = "Mouse Button Index:"
+	joy_key_shortcut_selector.input_type_l.text = "Joypad Button Index:"
+	joy_axis_shortcut_selector.input_type_l.text = "Joypad Axis Index:"
+
 	var mouse_option_button: OptionButton = mouse_shortcut_selector.option_button
 	for option in MOUSE_BUTTON_NAMES:
 		mouse_option_button.add_item(option)
