@@ -134,8 +134,8 @@ class Preset:
 		if !customizable:
 			return
 		for action in bindings:
-			var action_list: Array = config_file.get_value(config_section, action, [])
-			if action_list:
+			var action_list = config_file.get_value(config_section, action, [null])
+			if action_list != [null]:
 				bindings[action] = action_list
 
 	func change_action(action: String) -> void:
