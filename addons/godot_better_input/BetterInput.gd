@@ -1,18 +1,18 @@
 extends Node
 
+# Change these settings
 var presets := [Preset.new("Default", false), Preset.new("Custom")]
 var selected_preset: Preset = presets[0]
 var actions := {"pixelorama": MenuInputAction.new("", "", true, "nah", 0)}
 var groups := {}
-
+var config_path := "user://cache.ini"
+var config_file: ConfigFile
 
 class Preset:
 	var name := ""
 	var customizable := true
 	var bindings := {}
 	var config_section := ""
-	var config_path := ""
-	var config_file: ConfigFile
 
 	func _init(_name := "", _customizable := true) -> void:
 		name = _name
@@ -23,20 +23,20 @@ class Preset:
 			bindings[action] = InputMap.get_action_list(action)
 
 	func load_from_file() -> void:
-		if !config_file:
+		if !BetterInput.config_file:
 			return
 		if !customizable:
 			return
 		for action in bindings:
-			var action_list = config_file.get_value(config_section, action, [null])
+			var action_list = BetterInput.config_file.get_value(config_section, action, [null])
 			if action_list != [null]:
 				bindings[action] = action_list
 
 	func change_action(action: String) -> void:
 		bindings[action] = InputMap.get_action_list(action)
-		if config_file and customizable:
-			config_file.set_value(config_section, action, bindings[action])
-			config_file.save(config_path)
+		if BetterInput.config_file and customizable:
+			BetterInput.config_file.set_value(config_section, action, bindings[action])
+			BetterInput.config_file.save(BetterInput.config_path)
 
 
 class InputAction:
@@ -84,6 +84,13 @@ class InputGroup:
 
 	func _init(_parent_group := "") -> void:
 		parent_group = _parent_group
+
+
+func _init() -> void:
+	if !config_file:
+		config_file = ConfigFile.new()
+		if !config_path.empty():
+			config_file.load(config_path)
 
 
 func _input(event: InputEvent) -> void:

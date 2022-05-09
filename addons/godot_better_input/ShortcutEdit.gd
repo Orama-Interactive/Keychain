@@ -66,10 +66,8 @@ const JOY_AXIS_NAMES := [
 export(Array, String) var ignore_actions := []
 export(bool) var ignore_ui_actions := true
 export(Array, bool) var changeable_types := [true, true, true, false]
-export(String) var config_path := "user://cache.ini"
 
 var currently_editing_tree_item: TreeItem
-var config_file: ConfigFile
 
 # Textures taken from Godot https://github.com/godotengine/godot/tree/master/editor/icons
 var add_tex: Texture = preload("res://addons/godot_better_input/assets/add.svg")
@@ -93,15 +91,8 @@ onready var joy_axis_shortcut_selector: ConfirmationDialog = $JoyAxisShortcutSel
 
 
 func _ready() -> void:
-	if !config_file:
-		config_file = ConfigFile.new()
-	if !config_path.empty():
-		config_file.load(config_path)
 	for preset in BetterInput.presets:
-		if config_file:
-			preset.config_path = config_path
-			preset.config_file = config_file
-			preset.load_from_file()
+		preset.load_from_file()
 		presets_option_button.add_item(preset.name)
 
 	for action in BetterInput.actions:
@@ -118,7 +109,7 @@ func _ready() -> void:
 		else:
 			i += 1
 
-	var shortcuts_preset: int = config_file.get_value("shortcuts", "shortcuts_preset", 0)
+	var shortcuts_preset: int = BetterInput.config_file.get_value("shortcuts", "shortcuts_preset", 0)
 	presets_option_button.select(shortcuts_preset)
 	_on_PresetsOptionButton_item_selected(shortcuts_preset)
 
@@ -355,5 +346,5 @@ func _on_PresetsOptionButton_item_selected(index: int) -> void:
 		BetterInput.groups[group].tree_item = null
 	tree.clear()
 	_construct_tree()
-	config_file.set_value("shortcuts", "shortcuts_preset", index)
-	config_file.save(config_path)
+	BetterInput.config_file.set_value("shortcuts", "shortcuts_preset", index)
+	BetterInput.config_file.save(BetterInput.config_path)
