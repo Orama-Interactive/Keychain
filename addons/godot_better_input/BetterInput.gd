@@ -103,11 +103,14 @@ class InputGroup:
 
 
 func _init() -> void:
-	set_process_input(multiple_menu_accelerators)
 	if !config_file:
 		config_file = ConfigFile.new()
 		if !config_path.empty():
 			config_file.load(config_path)
+
+
+func _ready() -> void:
+	set_process_input(multiple_menu_accelerators)
 
 
 func _input(event: InputEvent) -> void:
