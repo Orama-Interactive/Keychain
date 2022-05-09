@@ -57,11 +57,14 @@ class InputAction:
 	func update_ui(_action: String) -> void:
 		pass
 
+	func handle_input(_event: InputEvent, _action: String) -> bool:
+		return false
+
 
 class MenuInputAction:
 	extends InputAction
-	var menu_node_path := ""
-	var menu_node: PopupMenu
+	var node_path := ""
+	var node: PopupMenu
 	var menu_item_id := 0
 	var echo := false
 
@@ -69,24 +72,24 @@ class MenuInputAction:
 		_display_name := "",
 		_group := "",
 		_global := true,
-		_menu_node_path := "",
+		_node_path := "",
 		_menu_item_id := 0,
 		_echo := false
 	) -> void:
 		._init(_display_name, _group, _global)
-		menu_node_path = _menu_node_path
+		node_path = _node_path
 		menu_item_id = _menu_item_id
 		echo = _echo
 
 	func get_menu_node(root: Node) -> void:
-		var node = root.get_node(menu_node_path)
-		if node is PopupMenu:
-			menu_node = node
-		elif node is MenuButton:
-			menu_node = node.get_popup()
+		var temp_node = root.get_node(node_path)
+		if temp_node is PopupMenu:
+			node = node
+		elif temp_node is MenuButton:
+			node = temp_node.get_popup()
 
 	func update_ui(action: String) -> void:
-		if !menu_node:
+		if !node:
 			return
 		var accel := 0
 		var events := InputMap.get_action_list(action)
@@ -94,7 +97,26 @@ class MenuInputAction:
 			if event is InputEventKey:
 				accel = event.get_scancode_with_modifiers()
 				break
-		menu_node.set_item_accelerator(menu_item_id, accel)
+		node.set_item_accelerator(menu_item_id, accel)
+
+	func handle_input(event: InputEvent, action: String) -> bool:
+		if not node:
+			return false
+		if event.is_action_pressed(action):
+			if event is InputEventKey:
+				var acc: int = node.get_item_accelerator(menu_item_id)
+				# If the event is the same as the menu item's accelerator, skip
+				if acc == event.get_scancode_with_modifiers():
+					return true
+			node.emit_signal("id_pressed", menu_item_id)
+			return true
+		if event.is_action(action) and echo:
+			if event.is_echo():
+				var menu: PopupMenu = node
+				node.emit_signal("id_pressed", menu_item_id)
+				return true
+
+		return false
 
 
 class InputGroup:
@@ -126,25 +148,9 @@ func _input(event: InputEvent) -> void:
 
 	for action in actions:
 		var input_action: InputAction = actions[action]
-		if not input_action is MenuInputAction:
-			continue
-
-		if event.is_action_pressed(action):
-			var menu: PopupMenu = input_action.menu_node
-			if not menu:
-				return
-			if event is InputEventKey:
-				var acc: int = menu.get_item_accelerator(input_action.menu_item_id)
-				# If the event is the same as the menu item's accelerator, skip
-				if acc == event.get_scancode_with_modifiers():
-					return
-			menu.emit_signal("id_pressed", input_action.menu_item_id)
+		var done: bool = input_action.handle_input(event, action)
+		if done:
 			return
-		if event.is_action(action) and input_action.echo:
-			if event.is_echo():
-				var menu: PopupMenu = input_action.menu_node
-				menu.emit_signal("id_pressed", input_action.menu_item_id)
-				return
 
 
 func action_add_event(action: String, new_event: InputEvent) -> void:
