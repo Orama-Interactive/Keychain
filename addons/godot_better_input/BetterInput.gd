@@ -114,6 +114,10 @@ func _init() -> void:
 
 func _ready() -> void:
 	set_process_input(multiple_menu_accelerators)
+	for action in actions:
+		var input_action: InputAction = actions[action]
+		if input_action is MenuInputAction:
+			input_action.get_menu_node(get_tree().current_scene)
 
 
 func _input(event: InputEvent) -> void:
