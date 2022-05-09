@@ -14,10 +14,6 @@ config/name="GodotBetterInput"
 run/main_scene="res://addons/godot_better_input/src/ShortcutEdit.tscn"
 config/icon="res://icon.png"
 
-[editor_plugins]
-
-enabled=PoolStringArray( "res://addons/godot_better_input/plugin.cfg" )
-
 [input]
 
 ui_accept={
