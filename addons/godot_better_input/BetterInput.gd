@@ -5,6 +5,10 @@ var presets := [Preset.new("Default", false), Preset.new("Custom")]
 var selected_preset: Preset = presets[0]
 var actions := {"pixelorama": MenuInputAction.new("", "", true, "nah", 0)}
 var groups := {}
+var ignore_actions := []
+var ignore_ui_actions := true
+var changeable_types := [true, true, true, false]
+var multiple_menu_accelerators := false
 var config_path := "user://cache.ini"
 var config_file: ConfigFile
 
@@ -99,6 +103,7 @@ class InputGroup:
 
 
 func _init() -> void:
+	set_process_input(multiple_menu_accelerators)
 	if !config_file:
 		config_file = ConfigFile.new()
 		if !config_path.empty():
