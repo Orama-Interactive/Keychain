@@ -103,7 +103,7 @@ func _set_shortcut(action: String, old_event: InputEvent, new_event: InputEvent)
 	return true
 
 
-# Algorithm based on https://github.com/godotengine/godot/blob/master/scene/gui/tree.cpp#L685
+# Based on https://github.com/godotengine/godot/blob/master/scene/gui/tree.cpp#L685
 func _get_next_tree_item(current: TreeItem) -> TreeItem:
 	if current.get_children():
 		current = current.get_children()

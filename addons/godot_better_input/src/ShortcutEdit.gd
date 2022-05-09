@@ -70,24 +70,8 @@ export(String) var config_path := "user://cache.ini"
 
 var presets := [Preset.new("Default", false), Preset.new("Custom")]
 var selected_preset: Preset = presets[0]
-var actions := {
-	"test_action": InputAction.new("Test Action", "GroupOne"),
-	"nicer_input": InputAction.new("", "GroupOne"),
-	"pixelorama": InputAction.new("Try Pixelorama!", "Parent"),
-	"grandchild": InputAction.new("Grandchild Action", "Child"),
-	"sibling": InputAction.new("Sibling", "Child"),
-	"local1": InputAction.new("", "GroupOne", false),
-	"local2": InputAction.new("", "GroupOne", false),
-	"local3": InputAction.new("", "GroupTwo", false),
-	"local4": InputAction.new("", "GroupTwo", false),
-}
-var groups := {
-	"GroupOne": InputGroup.new(),
-	"GroupTwo": InputGroup.new(),
-	"Grandparent": InputGroup.new(),
-	"Parent": InputGroup.new("Grandparent"),
-	"Child": InputGroup.new("Parent"),
-}
+var actions := {}
+var groups := {}
 var currently_editing_tree_item: TreeItem
 var config_file: ConfigFile
 
@@ -156,6 +140,26 @@ class InputAction:
 		global = _global
 
 
+class MenuInputAction extends InputAction:
+	var menu_node_path := ""
+	var menu_node: PopupMenu
+	var menu_item_id := 0
+	var echo := false
+
+	func _init(_display_name := "", _group := "", _global := true, _menu_node_path := "", _menu_item_id := 0, _echo := false) -> void:
+		._init(_display_name, _group, _global)
+		menu_node_path = _menu_node_path
+		menu_item_id = _menu_item_id
+		echo = _echo
+
+	func get_menu_node(root: Node) -> void:
+		var node = root.get_node(menu_node_path)
+		if node is PopupMenu:
+			menu_node = node
+		elif node is MenuButton:
+			menu_node = node.get_popup()
+
+
 class InputGroup:
 	var parent_group := ""
 	var tree_item: TreeItem
@@ -175,6 +179,11 @@ func _ready() -> void:
 			preset.config_file = config_file
 			preset.load_from_file()
 		presets_option_button.add_item(preset.name)
+
+	for action in actions:
+		var input_action: InputAction = actions[action]
+		if input_action is MenuInputAction:
+			input_action.get_menu_node(get_tree().current_scene)
 	_fill_selector_options()
 
 	# Remove input types that are not changeable
@@ -188,6 +197,30 @@ func _ready() -> void:
 	var shortcuts_preset: int = config_file.get_value("shortcuts", "shortcuts_preset", 0)
 	presets_option_button.select(shortcuts_preset)
 	_on_PresetsOptionButton_item_selected(shortcuts_preset)
+
+
+func _input(event: InputEvent) -> void:
+	for action in actions:
+		var input_action: InputAction = actions[action]
+		if not input_action is MenuInputAction:
+			continue
+
+		if event.is_action_pressed(action):
+			var menu: PopupMenu = input_action.menu_node
+			if not menu:
+				return
+			if event is InputEventKey:
+				var acc: int = menu.get_item_accelerator(input_action.menu_item_id)
+				# If the event is the same as the menu item's accelerator, skip
+				if acc == event.get_scancode_with_modifiers():
+					return
+			menu.emit_signal("id_pressed", input_action.menu_item_id)
+			return
+		elif event.is_action(action) and input_action.echo:
+			if event.is_echo():
+				var menu: PopupMenu = input_action.menu_node
+				menu.emit_signal("id_pressed", input_action.menu_item_id)
+				return
 
 
 func _construct_tree() -> void:
