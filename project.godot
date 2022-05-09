@@ -11,8 +11,16 @@ config_version=4
 [application]
 
 config/name="GodotBetterInput"
-run/main_scene="res://addons/godot_better_input/src/ShortcutEdit.tscn"
+run/main_scene="res://addons/godot_better_input/ShortcutEdit.tscn"
 config/icon="res://icon.png"
+
+[autoload]
+
+BetterInput="*res://addons/godot_better_input/BetterInput.gd"
+
+[editor_plugins]
+
+enabled=PoolStringArray( "res://addons/godot_better_input/plugin.cfg" )
 
 [input]
 
