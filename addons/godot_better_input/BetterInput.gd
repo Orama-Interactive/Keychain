@@ -8,6 +8,7 @@ var groups := {}
 var config_path := "user://cache.ini"
 var config_file: ConfigFile
 
+
 class Preset:
 	var name := ""
 	var customizable := true
@@ -77,6 +78,17 @@ class MenuInputAction:
 		elif node is MenuButton:
 			menu_node = node.get_popup()
 
+	func update_item_accelerator(action: String) -> void:
+		if !menu_node:
+			return
+		var accel := 0
+		var events := InputMap.get_action_list(action)
+		for event in events:
+			if event is InputEventKey:
+				accel = event.get_scancode_with_modifiers()
+				break
+		menu_node.set_item_accelerator(menu_item_id, accel)
+
 
 class InputGroup:
 	var parent_group := ""
@@ -115,3 +127,21 @@ func _input(event: InputEvent) -> void:
 				var menu: PopupMenu = input_action.menu_node
 				menu.emit_signal("id_pressed", input_action.menu_item_id)
 				return
+
+
+func action_add_event(action: String, new_event: InputEvent) -> void:
+	InputMap.action_add_event(action, new_event)
+	if action in actions and actions[action] is MenuInputAction:
+		actions[action].update_item_accelerator(action)
+
+
+func action_erase_event(action: String, event: InputEvent) -> void:
+	InputMap.action_erase_event(action, event)
+	if action in actions and actions[action] is MenuInputAction:
+		actions[action].update_item_accelerator(action)
+
+
+func action_erase_events(action: String) -> void:
+	InputMap.action_erase_events(action)
+	if action in actions and actions[action] is MenuInputAction:
+		actions[action].update_item_accelerator(action)
