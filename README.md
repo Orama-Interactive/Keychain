@@ -3,6 +3,12 @@ A plugin for the [Godot Engine](https://godotengine.org/) that aims to give the 
 
 [![Join our Discord server](https://discord.com/api/guilds/645793202393186339/embed.png)](https://discord.gg/GTMtr8s)
 
+## Features
+- Easy to use shortcut re-mapping system, for all input types, keyboard, mouse, gamepad buttons and gamepad axes. Great for accessibility purposes.
+- Add multiple input events (shortcuts) to each action, of multiple input types.
+- Group your inputs together, and choose whether certain input actions are global or local. Global events cannot be re-assigned anywhere else, local events can, but not to other events in the same group.
+- Choose between different input presets.
+
 ## Installation
 Copy the `addons/godot_better_input` directory into your Godot project files, and then enable `Godot Better Input` in Project Settings > Plugins.
 
