@@ -3,7 +3,10 @@ extends Node
 # Change these settings
 var presets := [Preset.new("Default", false), Preset.new("Custom")]
 var selected_preset: Preset = presets[0]
-var actions := {"pixelorama": MenuInputAction.new("", "", true, "nah", 0)}
+# Syntax: "action_name": InputAction.new("Action Display Name", "Group", true)
+# Note that "action_name" must already exist in the Project's Input Map.
+var actions := {}
+# Syntax: "Group Name": InputGroup.new("Parent Group Name")
 var groups := {}
 var ignore_actions := []
 var ignore_ui_actions := true
@@ -61,6 +64,12 @@ class InputAction:
 		return false
 
 
+# This class is useful for the accelerators of PopupMenu items
+# It's possible for PopupMenu items to have multiple shortcuts by using
+# set_item_shortcut(), but we have no control over the accelerator text that appears.
+# Thus, we are stuck with using accelerators instead of shortcuts.
+# If Godot ever receives the ability to change the accelerator text of the items,
+# we could in theory remove this class.
 class MenuInputAction:
 	extends InputAction
 	var node_path := ""
