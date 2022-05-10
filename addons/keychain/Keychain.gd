@@ -130,10 +130,12 @@ class MenuInputAction:
 
 class InputGroup:
 	var parent_group := ""
+	var folded := true
 	var tree_item: TreeItem
 
-	func _init(_parent_group := "") -> void:
+	func _init(_parent_group := "", _folded := true) -> void:
 		parent_group = _parent_group
+		folded = _folded
 
 
 func _init() -> void:
