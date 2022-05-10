@@ -31,20 +31,20 @@ class Preset:
 			bindings[action] = InputMap.get_action_list(action)
 
 	func load_from_file() -> void:
-		if !BetterInput.config_file:
+		if !Keychain.config_file:
 			return
 		if !customizable:
 			return
 		for action in bindings:
-			var action_list = BetterInput.config_file.get_value(config_section, action, [null])
+			var action_list = Keychain.config_file.get_value(config_section, action, [null])
 			if action_list != [null]:
 				bindings[action] = action_list
 
 	func change_action(action: String) -> void:
 		bindings[action] = InputMap.get_action_list(action)
-		if BetterInput.config_file and customizable:
-			BetterInput.config_file.set_value(config_section, action, bindings[action])
-			BetterInput.config_file.save(BetterInput.config_path)
+		if Keychain.config_file and customizable:
+			Keychain.config_file.set_value(config_section, action, bindings[action])
+			Keychain.config_file.save(Keychain.config_path)
 
 
 class InputAction:

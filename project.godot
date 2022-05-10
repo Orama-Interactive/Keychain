@@ -10,17 +10,17 @@ config_version=4
 
 [application]
 
-config/name="GodotBetterInput"
-run/main_scene="res://addons/godot_better_input/ShortcutEdit.tscn"
+config/name="Keychain"
+run/main_scene="res://addons/keychain/ShortcutEdit.tscn"
 config/icon="res://icon.png"
 
 [autoload]
 
-BetterInput="*res://addons/godot_better_input/BetterInput.gd"
+Keychain="*res://addons/keychain/Keychain.gd"
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/godot_better_input/plugin.cfg" )
+enabled=PoolStringArray( "res://addons/godot_better_input/plugin.cfg", "res://addons/keychain/plugin.cfg" )
 
 [input]
 
