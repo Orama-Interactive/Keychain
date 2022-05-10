@@ -20,7 +20,7 @@ Keychain="*res://addons/keychain/Keychain.gd"
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/godot_better_input/plugin.cfg", "res://addons/keychain/plugin.cfg" )
+enabled=PoolStringArray( "res://addons/keychain/plugin.cfg" )
 
 [input]
 
