@@ -125,7 +125,6 @@ class MenuInputAction:
 			return true
 		if event.is_action(action) and echo:
 			if event.is_echo():
-				var menu: PopupMenu = node
 				node.emit_signal("id_pressed", menu_item_id)
 				return true
 
@@ -142,14 +141,12 @@ class InputGroup:
 		folded = _folded
 
 
-func _init() -> void:
+func _ready() -> void:
 	if !config_file:
 		config_file = ConfigFile.new()
 		if !config_path.empty():
 			config_file.load(config_path)
 
-
-func _ready() -> void:
 	set_process_input(multiple_menu_accelerators)
 	for preset in presets:
 		preset.load_from_file()
