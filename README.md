@@ -3,6 +3,9 @@
 
 [![Join our Discord server](https://discord.com/api/guilds/645793202393186339/embed.png)](https://discord.gg/GTMtr8s)
 
+![Screenshot from Pixelorama](https://user-images.githubusercontent.com/35376950/168378906-f79c1692-e67d-4723-acb5-9822bc99c8a2.png)
+Screenshot from [Pixelorama](https://github.com/Orama-Interactive/Pixelorama).
+
 ## Features
 - Easy to use shortcut re-mapping system, for all input types, keyboard, mouse, gamepad buttons and gamepad axes. Great for accessibility purposes.
 - Add multiple input events (shortcuts) to each action, of multiple input types.
