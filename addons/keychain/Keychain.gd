@@ -179,8 +179,8 @@ func change_preset(index: int) -> void:
 			action_add_event(action, event)
 
 
-func action_add_event(action: String, new_event: InputEvent) -> void:
-	InputMap.action_add_event(action, new_event)
+func action_add_event(action: String, event: InputEvent) -> void:
+	InputMap.action_add_event(action, event)
 	if action in actions:
 		actions[action].update_node(action)
 
@@ -197,11 +197,11 @@ func action_erase_events(action: String) -> void:
 		actions[action].update_node(action)
 
 
-func action_get_first_key(action: String) -> String:
-	var text := "None"
+func action_get_first_key(action: String) -> InputEvent:
+	var first_key: InputEvent = null
 	var events := InputMap.get_action_list(action)
 	for event in events:
 		if event is InputEventKey:
-			text = event.as_text()
+			first_key = event
 			break
-	return text
+	return first_key
