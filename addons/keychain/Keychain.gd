@@ -1,11 +1,12 @@
 extends Node
 
 const TRANSLATIONS_PATH := "res://addons/keychain/translations"
+const PROFILES_PATH := "user://shortcut_profiles"
 
 # Change these settings
-var presets := [Preset.new("Default", false), Preset.new("Custom")]
-var selected_preset: Preset = presets[0]
-var preset_index := 0
+var profiles := [preload("profiles/default.tres")]
+var selected_profile: Profile = profiles[0]
+var profile_index := 0
 # Syntax: "action_name": InputAction.new("Action Display Name", "Group", true)
 # Note that "action_name" must already exist in the Project's Input Map.
 var actions := {}
@@ -17,37 +18,6 @@ var changeable_types := [true, true, true, true]
 var multiple_menu_accelerators := false
 var config_path := "user://cache.ini"
 var config_file: ConfigFile
-
-
-class Preset:
-	var name := ""
-	var customizable := true
-	var bindings := {}
-	var config_section := ""
-
-	func _init(_name := "", _customizable := true) -> void:
-		name = _name
-		customizable = _customizable
-		config_section = "shortcuts-%s" % name
-
-		for action in InputMap.get_actions():
-			bindings[action] = InputMap.get_action_list(action)
-
-	func load_from_file() -> void:
-		if !Keychain.config_file:
-			return
-		if !customizable:
-			return
-		for action in bindings:
-			var action_list = Keychain.config_file.get_value(config_section, action, [null])
-			if action_list != [null]:
-				bindings[action] = action_list
-
-	func change_action(action: String) -> void:
-		bindings[action] = InputMap.get_action_list(action)
-		if Keychain.config_file and customizable:
-			Keychain.config_file.set_value(config_section, action, bindings[action])
-			Keychain.config_file.save(Keychain.config_path)
 
 
 class InputAction:
@@ -147,21 +117,45 @@ func _ready() -> void:
 
 	set_process_input(multiple_menu_accelerators)
 
-	var dir := Directory.new()
-	dir.open(TRANSLATIONS_PATH)
-	dir.list_dir_begin()
-	var file_name = dir.get_next()
+	var profile_dir := Directory.new()
+	profile_dir.make_dir(PROFILES_PATH)
+	profile_dir.open(PROFILES_PATH)
+	profile_dir.list_dir_begin()
+	var file_name = profile_dir.get_next()
 	while file_name != "":
-		if !dir.current_is_dir():
+		if !profile_dir.current_is_dir():
+			if file_name.get_extension() == "tres":
+				var file = load(PROFILES_PATH.plus_file(file_name))
+				if file is Profile:
+					profiles.append(file)
+		file_name = profile_dir.get_next()
+
+	if profiles.size() == 1:
+		var profile := Profile.new()
+		profile.name = "Custom"
+		profile.resource_path = PROFILES_PATH.plus_file("custom.tres")
+		var err := ResourceSaver.save(profile.resource_path, profile)
+		if err != OK:
+			print("Error saving custom shortcut profile. Error code: %s" % err)
+		else:
+			profiles.append(profile)
+
+	for profile in profiles:
+		profile.fill_bindings()
+
+	var l18n_dir := Directory.new()
+	l18n_dir.open(TRANSLATIONS_PATH)
+	l18n_dir.list_dir_begin()
+	file_name = l18n_dir.get_next()
+	while file_name != "":
+		if !l18n_dir.current_is_dir():
 			if file_name.get_extension() == "po":
 				var t: Translation = load(TRANSLATIONS_PATH.plus_file(file_name))
 				TranslationServer.add_translation(t)
-		file_name = dir.get_next()
+		file_name = l18n_dir.get_next()
 
-	for preset in presets:
-		preset.load_from_file()
-	preset_index = config_file.get_value("shortcuts", "shortcuts_preset", 0)
-	change_preset(preset_index)
+	profile_index = config_file.get_value("shortcuts", "shortcuts_profile", 0)
+	change_profile(profile_index)
 
 	for action in actions:
 		var input_action: InputAction = actions[action]
@@ -180,12 +174,14 @@ func _input(event: InputEvent) -> void:
 			return
 
 
-func change_preset(index: int) -> void:
-	preset_index = index
-	selected_preset = presets[index]
-	for action in selected_preset.bindings:
+func change_profile(index: int) -> void:
+	if index >= profiles.size():
+		index = profiles.size() - 1
+	profile_index = index
+	selected_profile = profiles[index]
+	for action in selected_profile.bindings:
 		action_erase_events(action)
-		for event in selected_preset.bindings[action]:
+		for event in selected_profile.bindings[action]:
 			action_add_event(action, event)
 
 

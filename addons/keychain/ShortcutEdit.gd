@@ -86,8 +86,8 @@ onready var joy_axis_shortcut_selector: ConfirmationDialog = $JoyAxisShortcutSel
 
 
 func _ready() -> void:
-	for preset in Keychain.presets:
-		presets_option_button.add_item(preset.name)
+	for profile in Keychain.profiles:
+		presets_option_button.add_item(profile.name)
 
 	_fill_selector_options()
 
@@ -99,18 +99,18 @@ func _ready() -> void:
 		else:
 			i += 1
 
-	presets_option_button.select(Keychain.preset_index)
-	_on_PresetsOptionButton_item_selected(Keychain.preset_index)
+	presets_option_button.select(Keychain.profile_index)
+	_on_PresetsOptionButton_item_selected(Keychain.profile_index)
 
 
 func _construct_tree() -> void:
-	var buttons_disabled := false if Keychain.selected_preset.customizable else true
+	var buttons_disabled := false if Keychain.selected_profile.customizable else true
 	var tree_root: TreeItem = tree.create_item()
 	for group in Keychain.groups:  # Create groups
 		var input_group: Keychain.InputGroup = Keychain.groups[group]
 		_create_group_tree_item(input_group, group)
 
-	for action in Keychain.selected_preset.bindings:  # Fill the tree with actions and their events
+	for action in InputMap.get_actions():  # Fill the tree with actions and their events
 		if action in Keychain.ignore_actions:
 			continue
 		if Keychain.ignore_ui_actions and action.begins_with("ui_"):
@@ -222,7 +222,7 @@ func add_event_tree_item(event: InputEvent, action_tree_item: TreeItem) -> void:
 			if !Keychain.changeable_types[3]:
 				return
 
-	var buttons_disabled := false if Keychain.selected_preset.customizable else true
+	var buttons_disabled := false if Keychain.selected_profile.customizable else true
 	var event_tree_item: TreeItem = tree.create_item(action_tree_item)
 	event_tree_item.set_text(0, event_to_str(event))
 	event_tree_item.set_metadata(0, event)
@@ -286,7 +286,7 @@ func _on_ShortcutTree_button_pressed(item: TreeItem, _column: int, id: int) -> v
 			shortcut_type_menu.popup(rect)
 		elif id == 1:  # Delete
 			Keychain.action_erase_events(action)
-			Keychain.selected_preset.change_action(action)
+			Keychain.selected_profile.change_action(action)
 			var child := item.get_children()
 			while child != null:
 				child.free()
@@ -307,7 +307,7 @@ func _on_ShortcutTree_button_pressed(item: TreeItem, _column: int, id: int) -> v
 			if not parent_action is String:
 				return
 			Keychain.action_erase_event(parent_action, action)
-			Keychain.selected_preset.change_action(parent_action)
+			Keychain.selected_profile.change_action(parent_action)
 			item.free()
 
 
@@ -329,12 +329,12 @@ func _on_ShortcutTypeMenu_id_pressed(id: int) -> void:
 
 
 func _on_PresetsOptionButton_item_selected(index: int) -> void:
-	Keychain.change_preset(index)
+	Keychain.change_profile(index)
 
 	# Re-construct the tree
 	for group in Keychain.groups:
 		Keychain.groups[group].tree_item = null
 	tree.clear()
 	_construct_tree()
-	Keychain.config_file.set_value("shortcuts", "shortcuts_preset", index)
+	Keychain.config_file.set_value("shortcuts", "shortcuts_profile", index)
 	Keychain.config_file.save(Keychain.config_path)
