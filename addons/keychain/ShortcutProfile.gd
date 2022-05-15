@@ -1,4 +1,4 @@
-class_name Profile
+class_name ShortcutProfile
 extends Resource
 
 export(String) var name := ""

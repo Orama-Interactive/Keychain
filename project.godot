@@ -10,12 +10,12 @@ config_version=4
 
 _global_script_classes=[ {
 "base": "Resource",
-"class": "Profile",
+"class": "ShortcutProfile",
 "language": "GDScript",
-"path": "res://addons/keychain/Profile.gd"
+"path": "res://addons/keychain/ShortcutProfile.gd"
 } ]
 _global_script_class_icons={
-"Profile": ""
+"ShortcutProfile": ""
 }
 
 [application]

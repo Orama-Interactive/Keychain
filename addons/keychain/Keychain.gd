@@ -5,7 +5,7 @@ const PROFILES_PATH := "user://shortcut_profiles"
 
 # Change these settings
 var profiles := [preload("profiles/default.tres")]
-var selected_profile: Profile = profiles[0]
+var selected_profile: ShortcutProfile = profiles[0]
 var profile_index := 0
 # Syntax: "action_name": InputAction.new("Action Display Name", "Group", true)
 # Note that "action_name" must already exist in the Project's Input Map.
@@ -117,6 +117,7 @@ func _ready() -> void:
 
 	set_process_input(multiple_menu_accelerators)
 
+	# Load shortcut profiles
 	var profile_dir := Directory.new()
 	profile_dir.make_dir(PROFILES_PATH)
 	profile_dir.open(PROFILES_PATH)
@@ -126,12 +127,13 @@ func _ready() -> void:
 		if !profile_dir.current_is_dir():
 			if file_name.get_extension() == "tres":
 				var file = load(PROFILES_PATH.plus_file(file_name))
-				if file is Profile:
+				if file is ShortcutProfile:
 					profiles.append(file)
 		file_name = profile_dir.get_next()
 
+	# If there are no profiles besides the default, create one custom
 	if profiles.size() == 1:
-		var profile := Profile.new()
+		var profile := ShortcutProfile.new()
 		profile.name = "Custom"
 		profile.resource_path = PROFILES_PATH.plus_file("custom.tres")
 		var err := ResourceSaver.save(profile.resource_path, profile)
