@@ -358,7 +358,7 @@ func _on_NewProfile_pressed() -> void:
 func _on_RenameProfile_pressed() -> void:
 	is_editing = true
 	profile_name.text = Keychain.selected_profile.name
-	profile_settings.window_title = "New Shortcut Profile"
+	profile_settings.window_title = "Rename Shortcut Profile"
 	profile_settings.popup_centered()
 
 
