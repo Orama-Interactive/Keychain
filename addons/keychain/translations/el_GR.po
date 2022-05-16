@@ -35,7 +35,7 @@ msgid "New"
 msgstr "Νέο"
 
 msgid "Rename"
-msgstr "Αλλαγή ονόματος"
+msgstr "Μετονομασία"
 
 msgid "Open Folder"
 msgstr "Άνοιγμα φακέλου"
@@ -44,7 +44,7 @@ msgid "New Shortcut Profile"
 msgstr "Νέο προφίλ συντομέυσεων"
 
 msgid "Rename Shortcut Profile"
-msgstr "Αλλαγή ονόματος προφίλ συντομεύσεων"
+msgstr "Μετονομασία προφίλ συντομεύσεων"
 
 msgid "Are you sure you want to delete this shortcut profile?"
 msgstr "Είστε σίγουροι πως θέλετε να διαγραφτεί αυτό το προφίλ συντομέυσεων;"
