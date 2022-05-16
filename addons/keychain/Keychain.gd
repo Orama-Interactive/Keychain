@@ -136,10 +136,8 @@ func _ready() -> void:
 		var profile := ShortcutProfile.new()
 		profile.name = "Custom"
 		profile.resource_path = PROFILES_PATH.plus_file("custom.tres")
-		var err := ResourceSaver.save(profile.resource_path, profile)
-		if err != OK:
-			print("Error saving custom shortcut profile. Error code: %s" % err)
-		else:
+		var saved := profile.save()
+		if saved:
 			profiles.append(profile)
 
 	for profile in profiles:

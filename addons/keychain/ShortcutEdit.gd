@@ -64,6 +64,7 @@ const JOY_AXIS_NAMES := [
 ]
 
 var currently_editing_tree_item: TreeItem
+var is_editing := false
 # Textures taken from Godot https://github.com/godotengine/godot/tree/master/editor/icons
 var add_tex: Texture = preload("assets/add.svg")
 var edit_tex: Texture = preload("assets/edit.svg")
@@ -77,17 +78,22 @@ var shortcut_tex: Texture = preload("assets/shortcut.svg")
 var folder_tex: Texture = preload("assets/folder.svg")
 
 onready var tree: Tree = $VBoxContainer/ShortcutTree
-onready var presets_option_button: OptionButton = find_node("PresetsOptionButton")
+onready var profile_option_button: OptionButton = find_node("ProfileOptionButton")
+onready var rename_profile_button: Button = find_node("RenameProfile")
+onready var delete_profile_button: Button = find_node("DeleteProfile")
 onready var shortcut_type_menu: PopupMenu = $ShortcutTypeMenu
 onready var keyboard_shortcut_selector: ConfirmationDialog = $KeyboardShortcutSelectorDialog
 onready var mouse_shortcut_selector: ConfirmationDialog = $MouseShortcutSelectorDialog
 onready var joy_key_shortcut_selector: ConfirmationDialog = $JoyKeyShortcutSelectorDialog
 onready var joy_axis_shortcut_selector: ConfirmationDialog = $JoyAxisShortcutSelectorDialog
+onready var profile_settings: ConfirmationDialog = $ProfileSettings
+onready var profile_name: LineEdit = $ProfileSettings/ProfileName
+onready var delete_confirmation: ConfirmationDialog = $DeleteConfirmation
 
 
 func _ready() -> void:
 	for profile in Keychain.profiles:
-		presets_option_button.add_item(profile.name)
+		profile_option_button.add_item(profile.name)
 
 	_fill_selector_options()
 
@@ -99,8 +105,8 @@ func _ready() -> void:
 		else:
 			i += 1
 
-	presets_option_button.select(Keychain.profile_index)
-	_on_PresetsOptionButton_item_selected(Keychain.profile_index)
+	profile_option_button.select(Keychain.profile_index)
+	_on_ProfileOptionButton_item_selected(Keychain.profile_index)
 
 
 func _construct_tree() -> void:
@@ -328,8 +334,10 @@ func _on_ShortcutTypeMenu_id_pressed(id: int) -> void:
 		joy_axis_shortcut_selector.popup_centered()
 
 
-func _on_PresetsOptionButton_item_selected(index: int) -> void:
+func _on_ProfileOptionButton_item_selected(index: int) -> void:
 	Keychain.change_profile(index)
+	rename_profile_button.disabled = false if Keychain.selected_profile.customizable else true
+	delete_profile_button.disabled = false if Keychain.selected_profile.customizable else true
 
 	# Re-construct the tree
 	for group in Keychain.groups:
@@ -338,3 +346,65 @@ func _on_PresetsOptionButton_item_selected(index: int) -> void:
 	_construct_tree()
 	Keychain.config_file.set_value("shortcuts", "shortcuts_profile", index)
 	Keychain.config_file.save(Keychain.config_path)
+
+
+func _on_NewProfile_pressed() -> void:
+	is_editing = false
+	profile_name.text = "New Shortcut Profile"
+	profile_settings.window_title = "New Shortcut Profile"
+	profile_settings.popup_centered()
+
+
+func _on_RenameProfile_pressed() -> void:
+	is_editing = true
+	profile_name.text = Keychain.selected_profile.name
+	profile_settings.window_title = "New Shortcut Profile"
+	profile_settings.popup_centered()
+
+
+func _on_DeleteProfile_pressed() -> void:
+	delete_confirmation.popup_centered()
+
+
+func _on_OpenProfileFolder_pressed() -> void:
+	OS.shell_open(ProjectSettings.globalize_path(Keychain.PROFILES_PATH))
+
+
+func _on_ProfileSettings_confirmed() -> void:
+	var file_name := profile_name.text + ".tres"
+	var profile := ShortcutProfile.new()
+	profile.name = profile_name.text
+	profile.resource_path = Keychain.PROFILES_PATH.plus_file(file_name)
+	profile.fill_bindings()
+	var saved := profile.save()
+	if not saved:
+		return
+
+	if is_editing:
+		var old_file_name: String = Keychain.selected_profile.resource_path
+		if old_file_name != file_name:
+			_delete_profile_file(old_file_name)
+		Keychain.profiles[Keychain.profile_index] = profile
+		profile_option_button.set_item_text(Keychain.profile_index, profile.name)
+	else:  # Add new shortcut profile
+		Keychain.profiles.append(profile)
+		profile_option_button.add_item(profile.name)
+		Keychain.profile_index = Keychain.profiles.size() - 1
+		profile_option_button.select(Keychain.profile_index)
+		_on_ProfileOptionButton_item_selected(Keychain.profile_index)
+
+
+func _delete_profile_file(file_name: String) -> void:
+	var dir := Directory.new()
+	dir.remove(file_name)
+
+
+func _on_DeleteConfirmation_confirmed() -> void:
+	_delete_profile_file(Keychain.selected_profile.resource_path)
+	profile_option_button.remove_item(Keychain.profile_index)
+	Keychain.profiles.remove(Keychain.profile_index)
+	Keychain.profile_index -= 1
+	if Keychain.profile_index < 0:
+		Keychain.profile_index = 0
+	profile_option_button.select(Keychain.profile_index)
+	_on_ProfileOptionButton_item_selected(Keychain.profile_index)
