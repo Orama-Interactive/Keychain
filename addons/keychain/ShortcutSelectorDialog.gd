@@ -158,10 +158,22 @@ func _on_ShortcutSelectorDialog_about_to_show() -> void:
 		yield(get_tree(), "idle_frame")
 		entered_shortcut.grab_focus()
 	else:
-		if !listened_input:
+		var metadata = root.currently_editing_tree_item.get_metadata(0)
+		if metadata is InputEvent:  # Editing an input event
+			var index := 0
+			if metadata is InputEventMouseButton:
+				index = metadata.button_index - 1
+			elif metadata is InputEventJoypadButton:
+				index = metadata.button_index
+			elif metadata is InputEventJoypadMotion:
+				index = metadata.axis * 2
+				index += round(metadata.axis_value) / 2.0 + 0.5
+			option_button.select(index)
+			_on_OptionButton_item_selected(index)
+
+		elif metadata is String:  # Adding a new input event to an action
+			option_button.select(0)
 			_on_OptionButton_item_selected(0)
-		else:
-			_show_assigned_state(listened_input)
 
 
 func _on_ShortcutSelectorDialog_popup_hide() -> void:
