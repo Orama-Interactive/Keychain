@@ -24,7 +24,7 @@ Copy the `addons/keychain` directory into your Godot project files, and then ena
 ## How to use
 Find the ShortcutEdit scene in `res://addons/keychain/ShortcutEdit.tscn` and drag and drop it in the settings scene of your project. To put your input actions into groups, you can edit the `actions` and `groups` dictionaries found in the `Keychain.gd` autoload script. Note that you cannot create new input actions this way, they must already exist in the Project Settings' Input Map.
 
-You can also create your own presets by adding new instances of type `Preset` in the `presets` array.
+You can also create your own shortcut profile by creating new `ShortcutProfile` resources and preloading them in the `profiles` array. Or you can create shortcut profiles using the addon itself while your project is running, and they will get saved as `.tres` Godot resource files inside `user://shortcut_profiles`.
 
 In order to make certain actions not appear in the settings, you can add their names (as they're found in the Input Map) in the `ignore_actions` array.
 
