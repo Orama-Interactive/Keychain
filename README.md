@@ -3,16 +3,17 @@
 
 [![Join our Discord server](https://discord.com/api/guilds/645793202393186339/embed.png)](https://discord.gg/GTMtr8s)
 
-![Screenshot from Pixelorama](https://user-images.githubusercontent.com/35376950/168378906-f79c1692-e67d-4723-acb5-9822bc99c8a2.png)
+![Screenshot from Pixelorama](https://user-images.githubusercontent.com/35376950/168581977-62a5c64d-0b64-428c-a738-528611c88898.png)
 Screenshot from [Pixelorama](https://github.com/Orama-Interactive/Pixelorama).
 
 ## Features
 - Easy to use shortcut re-mapping system, for all input types, keyboard, mouse, gamepad buttons and gamepad axes. Great for accessibility purposes.
 - Add multiple input events (shortcuts) to each action, of multiple input types.
 - Group your inputs together, and choose whether certain input actions are global or local. Global events cannot be re-assigned anywhere else, local events can, but not to other events in the same group.
-- Choose between different input presets.
+- Choose between different shortcut profiles and create custom ones.
 - Save shortcut modifications.
 - Support for localization.
+- Automatically deletes old input actions that have been deprecated during development of your project, so there is no need to worry over this.
 
 ## Support
 If you wish to support the development of this plugin, consider [supporting us on Patreon](https://patreon.com/OramaInteractive).
