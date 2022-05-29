@@ -97,14 +97,9 @@ func _set_shortcut(action: String, old_event: InputEvent, new_event: InputEvent)
 			if metadata is InputEvent:
 				if input_to_replace.shortcut_match(metadata):
 					var map_action: String = tree_item.get_parent().get_metadata(0)
-					if map_action in Keychain.actions:
-						# If it's local, check if it's the same group, otherwise ignore
-						if !Keychain.actions[map_action].global:
-							if Keychain.actions[map_action].group != group:
-								tree_item = _get_next_tree_item(tree_item)
-								continue
-					tree_item.free()
-					break
+					if map_action == action_to_replace:
+						tree_item.free()
+						break
 
 			tree_item = _get_next_tree_item(tree_item)
 
@@ -138,14 +133,16 @@ func _find_matching_event_in_map(action: String, event: InputEvent) -> Array:
 		if Keychain.ignore_ui_actions and map_action.begins_with("ui_"):
 			continue
 		for map_event in InputMap.get_action_list(map_action):
-			if event.shortcut_match(map_event):
-				if map_action in Keychain.actions:
-					# If it's local, check if it's the same group, otherwise ignore
-					if !Keychain.actions[map_action].global:
-						if Keychain.actions[map_action].group != group:
-							continue
+			if !event.shortcut_match(map_event):
+				continue
 
-				return [map_action, map_event]
+			if map_action in Keychain.actions:
+				# If it's local, check if it's the same group, otherwise ignore
+				if !Keychain.actions[action].global or !Keychain.actions[map_action].global:
+					if Keychain.actions[map_action].group != group:
+						continue
+
+			return [map_action, map_event]
 
 	return []
 
