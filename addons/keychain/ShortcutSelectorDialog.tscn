@@ -12,12 +12,14 @@ offset_right = 341.0
 offset_bottom = 64.0
 
 [node name="InputTypeLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
 offset_right = 333.0
 offset_bottom = 14.0
 text = "Press a key or a key combination to set the shortcut"
 
 [node name="EnteredShortcut" type="LineEdit" parent="VBoxContainer"]
 visible = false
+layout_mode = 2
 offset_top = 18.0
 offset_right = 333.0
 offset_bottom = 32.0
@@ -25,12 +27,14 @@ editable = false
 virtual_keyboard_enabled = false
 
 [node name="OptionButton" type="OptionButton" parent="VBoxContainer"]
+layout_mode = 2
 offset_top = 18.0
 offset_right = 333.0
 offset_bottom = 38.0
 mouse_default_cursor_shape = 2
 
 [node name="AlreadyExistsLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
 offset_top = 42.0
 offset_right = 333.0
 offset_bottom = 56.0

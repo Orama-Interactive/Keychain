@@ -281,10 +281,10 @@ func event_to_str(event: InputEvent) -> String:
 	return output
 
 
-func _on_ShortcutTree_button_pressed(item: TreeItem, _column: int, id: int) -> void:
+func _on_shortcut_tree_button_clicked(item: TreeItem, _column: int, id: int, _mbi: int) -> void:
 	var action = item.get_metadata(0)
 	currently_editing_tree_item = item
-	if action is String:
+	if action is StringName:
 		if id == 0:  # Add
 			var rect: Rect2 = tree.get_item_area_rect(item, 0)
 			rect.position.x = rect.end.x - 42
@@ -320,7 +320,7 @@ func _on_ShortcutTree_button_pressed(item: TreeItem, _column: int, id: int) -> v
 func _on_ShortcutTree_item_activated() -> void:
 	var selected_item: TreeItem = tree.get_selected()
 	if selected_item.get_button_count(0) > 0 and !selected_item.is_button_disabled(0, 0):
-		_on_ShortcutTree_button_pressed(tree.get_selected(), 0, 0)
+		_on_shortcut_tree_button_clicked(tree.get_selected(), 0, 0, 0)
 
 
 func _on_ShortcutTypeMenu_id_pressed(id: int) -> void:
@@ -396,7 +396,9 @@ func _on_ProfileSettings_confirmed() -> void:
 
 func _delete_profile_file(file_name: String) -> void:
 	var dir := Directory.new()
-	dir.remove_at(file_name)
+	if dir.open(file_name) != OK:
+		return
+	dir.remove(file_name)
 
 
 func _on_DeleteConfirmation_confirmed() -> void:
