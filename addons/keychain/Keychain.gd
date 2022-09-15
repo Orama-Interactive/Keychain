@@ -25,7 +25,7 @@ class InputAction:
 	var group := ""
 	var global := true
 
-	func _init(_display_name := "", _group := "", _global := true) -> void:
+	func _init(_display_name := "",_group := "",_global := true):
 		display_name = _display_name
 		group = _group
 		global = _global
@@ -61,7 +61,7 @@ class MenuInputAction:
 		_menu_item_id := 0,
 		_echo := false
 	) -> void:
-		._init(_display_name, _group, _global)
+		super._init(_display_name, _group, _global)
 		node_path = _node_path
 		menu_item_id = _menu_item_id
 		echo = _echo
@@ -77,7 +77,7 @@ class MenuInputAction:
 		if !node:
 			return
 		var first_key: InputEventKey = Keychain.action_get_first_key(action)
-		var accel := first_key.get_scancode_with_modifiers() if first_key else 0
+		var accel := first_key.get_keycode_with_modifiers() if first_key else 0
 		node.set_item_accelerator(menu_item_id, accel)
 
 	func handle_input(event: InputEvent, action: String) -> bool:
@@ -87,7 +87,7 @@ class MenuInputAction:
 			if event is InputEventKey:
 				var acc: int = node.get_item_accelerator(menu_item_id)
 				# If the event is the same as the menu item's accelerator, skip
-				if acc == event.get_scancode_with_modifiers():
+				if acc == event.get_keycode_with_modifiers():
 					return true
 			node.emit_signal("id_pressed", menu_item_id)
 			return true
@@ -112,7 +112,7 @@ class InputGroup:
 func _ready() -> void:
 	if !config_file:
 		config_file = ConfigFile.new()
-		if !config_path.empty():
+		if !config_path.is_empty():
 			config_file.load(config_path)
 
 	set_process_input(multiple_menu_accelerators)
@@ -121,12 +121,12 @@ func _ready() -> void:
 	var profile_dir := Directory.new()
 	profile_dir.make_dir(PROFILES_PATH)
 	profile_dir.open(PROFILES_PATH)
-	profile_dir.list_dir_begin()
+	profile_dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 	var file_name = profile_dir.get_next()
 	while file_name != "":
 		if !profile_dir.current_is_dir():
 			if file_name.get_extension() == "tres":
-				var file = load(PROFILES_PATH.plus_file(file_name))
+				var file = load(PROFILES_PATH.path_join(file_name))
 				if file is ShortcutProfile:
 					profiles.append(file)
 		file_name = profile_dir.get_next()
@@ -135,7 +135,7 @@ func _ready() -> void:
 	if profiles.size() == 1:
 		var profile := ShortcutProfile.new()
 		profile.name = "Custom"
-		profile.resource_path = PROFILES_PATH.plus_file("custom.tres")
+		profile.resource_path = PROFILES_PATH.path_join("custom.tres")
 		var saved := profile.save()
 		if saved:
 			profiles.append(profile)
@@ -145,12 +145,12 @@ func _ready() -> void:
 
 	var l18n_dir := Directory.new()
 	l18n_dir.open(TRANSLATIONS_PATH)
-	l18n_dir.list_dir_begin()
+	l18n_dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 	file_name = l18n_dir.get_next()
 	while file_name != "":
 		if !l18n_dir.current_is_dir():
 			if file_name.get_extension() == "po":
-				var t: Translation = load(TRANSLATIONS_PATH.plus_file(file_name))
+				var t: Translation = load(TRANSLATIONS_PATH.path_join(file_name))
 				TranslationServer.add_translation(t)
 		file_name = l18n_dir.get_next()
 
@@ -205,7 +205,7 @@ func action_erase_events(action: String) -> void:
 
 func action_get_first_key(action: String) -> InputEventKey:
 	var first_key: InputEventKey = null
-	var events := InputMap.get_action_list(action)
+	var events := InputMap.action_get_events(action)
 	for event in events:
 		if event is InputEventKey:
 			first_key = event
