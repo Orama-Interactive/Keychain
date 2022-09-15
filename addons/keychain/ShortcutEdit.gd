@@ -310,7 +310,7 @@ func _on_shortcut_tree_button_clicked(item: TreeItem, _column: int, id: int, _mb
 			elif action is InputEventJoypadMotion:
 				joy_axis_shortcut_selector.popup_centered()
 		elif id == 1:  # Delete
-			if not parent_action is String:
+			if not parent_action is StringName:
 				return
 			Keychain.action_erase_event(parent_action, action)
 			Keychain.selected_profile.change_action(parent_action)
@@ -396,7 +396,9 @@ func _on_ProfileSettings_confirmed() -> void:
 
 func _delete_profile_file(file_name: String) -> void:
 	var dir := Directory.new()
-	if dir.open(file_name) != OK:
+	var err := dir.open(file_name.get_base_dir())
+	if err != OK:
+		print("Error deleting shortcut profile %s. Error code: %s" % [file_name, err])
 		return
 	dir.remove(file_name)
 
