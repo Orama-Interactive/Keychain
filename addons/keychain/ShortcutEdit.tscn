@@ -102,14 +102,18 @@ item_3/icon = ExtResource("4")
 item_3/id = 3
 
 [node name="KeyboardShortcutSelectorDialog" parent="." instance=ExtResource("6")]
+size = Vector2i(417, 134)
 
 [node name="MouseShortcutSelectorDialog" parent="." instance=ExtResource("6")]
+size = Vector2i(417, 134)
 input_type = 1
 
 [node name="JoyKeyShortcutSelectorDialog" parent="." instance=ExtResource("6")]
+size = Vector2i(417, 134)
 input_type = 2
 
 [node name="JoyAxisShortcutSelectorDialog" parent="." instance=ExtResource("6")]
+size = Vector2i(417, 134)
 input_type = 3
 
 [node name="ProfileSettings" type="ConfirmationDialog" parent="."]
@@ -118,9 +122,10 @@ input_type = 3
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 192.0
-offset_bottom = 34.0
+offset_bottom = 51.0
 
 [node name="DeleteConfirmation" type="ConfirmationDialog" parent="."]
+size = Vector2i(427, 100)
 dialog_text = "Are you sure you want to delete this shortcut profile?"
 
 [connection signal="item_selected" from="VBoxContainer/HBoxContainer/ProfileOptionButton" to="." method="_on_ProfileOptionButton_item_selected"]
