@@ -28,60 +28,37 @@ size_flags_vertical = 3
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
-offset_right = 1152.0
-offset_bottom = 31.0
 
 [node name="ProfileLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
-offset_top = 2.0
-offset_right = 126.0
-offset_bottom = 28.0
 text = "Shortcut profile:"
 
 [node name="ProfileOptionButton" type="OptionButton" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
-offset_left = 130.0
-offset_right = 144.0
-offset_bottom = 31.0
 mouse_default_cursor_shape = 2
 
 [node name="NewProfile" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
-offset_left = 148.0
-offset_right = 191.0
-offset_bottom = 31.0
 mouse_default_cursor_shape = 2
 text = "New"
 
 [node name="RenameProfile" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
-offset_left = 195.0
-offset_right = 267.0
-offset_bottom = 31.0
 mouse_default_cursor_shape = 2
 text = "Rename"
 
 [node name="DeleteProfile" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
-offset_left = 271.0
-offset_right = 330.0
-offset_bottom = 31.0
 mouse_default_cursor_shape = 2
 text = "Delete"
 
 [node name="OpenProfileFolder" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
-offset_left = 334.0
-offset_right = 437.0
-offset_bottom = 31.0
 mouse_default_cursor_shape = 2
 text = "Open Folder"
 
 [node name="ShortcutTree" type="Tree" parent="VBoxContainer"]
 layout_mode = 2
-offset_top = 35.0
-offset_right = 1152.0
-offset_bottom = 648.0
 size_flags_vertical = 3
 hide_root = true
 

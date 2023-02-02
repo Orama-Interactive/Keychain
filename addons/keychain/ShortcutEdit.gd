@@ -395,8 +395,8 @@ func _on_ProfileSettings_confirmed() -> void:
 
 
 func _delete_profile_file(file_name: String) -> void:
-	var dir := Directory.new()
-	var err := dir.open(file_name.get_base_dir())
+	var dir := DirAccess.open(file_name.get_base_dir())
+	var err := dir.get_open_error()
 	if err != OK:
 		print("Error deleting shortcut profile %s. Error code: %s" % [file_name, err])
 		return
