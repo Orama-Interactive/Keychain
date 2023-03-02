@@ -118,8 +118,8 @@ func _ready() -> void:
 	set_process_input(multiple_menu_accelerators)
 
 	# Load shortcut profiles
+	DirAccess.make_dir_recursive_absolute(PROFILES_PATH)
 	var profile_dir := DirAccess.open(PROFILES_PATH)
-	profile_dir.make_dir(PROFILES_PATH)
 	profile_dir.list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547
 	var file_name = profile_dir.get_next()
 	while file_name != "":
