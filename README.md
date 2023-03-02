@@ -3,6 +3,8 @@
 
 **Keychain** is a plugin for the [Godot Engine](https://godotengine.org/) that aims to give the player full control over the input actions of the game. Created by [Orama Interactive](https://oramainteractive.com).
 
+This plugin works for Godot 4.0. For the 3.x version, see [the 3.x branch](https://github.com/Orama-Interactive/Keychain/tree/3.x).
+
 [![Join our Discord server](https://discord.com/api/guilds/645793202393186339/embed.png)](https://discord.gg/GTMtr8s)
 
 ![Screenshot from Pixelorama](https://user-images.githubusercontent.com/35376950/168581977-62a5c64d-0b64-428c-a738-528611c88898.png)
