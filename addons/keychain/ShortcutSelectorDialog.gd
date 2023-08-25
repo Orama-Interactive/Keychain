@@ -2,7 +2,7 @@ extends ConfirmationDialog
 
 enum InputTypes { KEYBOARD, MOUSE, JOY_BUTTON, JOY_AXIS }
 
-@export var input_type: InputTypes = InputTypes.KEYBOARD
+@export var input_type := InputTypes.KEYBOARD
 var listened_input: InputEvent
 
 @onready var root: Node = get_parent()
@@ -102,25 +102,11 @@ func _set_shortcut(action: StringName, old_event: InputEvent, new_event: InputEv
 						tree_item.free()
 						break
 
-			tree_item = _get_next_tree_item(tree_item)
+			tree_item = tree_item.get_next_in_tree()
 
 	Keychain.action_add_event(action, new_event)
 	Keychain.selected_profile.change_action(action)
 	return true
-
-
-# Based on https://github.com/godotengine/godot/blob/master/scene/gui/tree.cpp#L685
-func _get_next_tree_item(current: TreeItem) -> TreeItem:
-	if current.get_first_child():
-		current = current.get_first_child()
-	elif current.get_next():
-		current = current.get_next()
-	else:
-		while current and !current.get_next():
-			current = current.get_parent()
-		if current:
-			current = current.get_next()
-	return current
 
 
 func _find_matching_event_in_map(action: StringName, event: InputEvent) -> Array:
