@@ -1,10 +1,11 @@
 extends Node
 
 const PROFILES_PATH := "user://shortcut_profiles"
+const DEFAULT_PROFILE := preload("profiles/default.tres")
 
 ## [Array] of [ShortcutProfile]s.
-var profiles: Array[ShortcutProfile] = [preload("profiles/default.tres")]
-var selected_profile := profiles[0]  ## The currently selected [ShortcutProfile].
+var profiles: Array[ShortcutProfile] = []
+var selected_profile: ShortcutProfile  ## The currently selected [ShortcutProfile].
 var profile_index := 0  ## The index of the currently selected [ShortcutProfile].
 ## Syntax: "action_name": InputAction.new("Action Display Name", "Group", true)
 ## Note that "action_name" must already exist in the Project's Input Map.
@@ -71,7 +72,7 @@ func _ready() -> void:
 		file_name = profile_dir.get_next()
 
 	# If there are no profiles besides the default, create one custom
-	if profiles.size() == 1:
+	if profiles.size() == 0:
 		var profile := ShortcutProfile.new()
 		profile.name = "Custom"
 		profile.resource_path = PROFILES_PATH.path_join("custom.tres")
@@ -79,6 +80,7 @@ func _ready() -> void:
 		if saved:
 			profiles.append(profile)
 
+	DEFAULT_PROFILE.fill_bindings()
 	for profile in profiles:
 		profile.fill_bindings()
 

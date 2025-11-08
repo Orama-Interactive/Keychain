@@ -3,7 +3,7 @@ extends Resource
 
 @export var name := ""
 @export var customizable := true
-@export var bindings := {}
+@export var bindings: Dictionary[StringName, Array] = {}
 
 
 func _init() -> void:
@@ -18,6 +18,11 @@ func fill_bindings() -> void:
 		unnecessary_actions.erase(action)
 	for action in unnecessary_actions:
 		bindings.erase(action)
+	save()
+
+
+func copy_bindings_from(other_profile: ShortcutProfile) -> void:
+	bindings = other_profile.bindings.duplicate(true)
 	save()
 
 

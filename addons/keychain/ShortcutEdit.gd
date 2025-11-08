@@ -89,6 +89,7 @@ var folder_tex: Texture2D = preload("assets/folder.svg")
 @onready var profile_settings: ConfirmationDialog = $ProfileSettings
 @onready var profile_name: LineEdit = $ProfileSettings/ProfileName
 @onready var delete_confirmation: ConfirmationDialog = $DeleteConfirmation
+@onready var reset_confirmation: ConfirmationDialog = $ResetConfirmation
 
 
 func _ready() -> void:
@@ -112,7 +113,6 @@ func _ready() -> void:
 
 
 func _construct_tree() -> void:
-	var buttons_disabled := false if Keychain.selected_profile.customizable else true
 	var tree_root: TreeItem = tree.create_item()
 	for group in Keychain.groups:  # Create groups
 		var input_group: Keychain.InputGroup = Keychain.groups[group]
@@ -145,6 +145,7 @@ func _construct_tree() -> void:
 		for event in InputMap.action_get_events(action):
 			add_event_tree_item(event, tree_item)
 
+		var buttons_disabled := false if Keychain.selected_profile.customizable else true
 		tree_item.add_button(0, add_tex, 0, buttons_disabled, "Add")
 		tree_item.add_button(0, delete_tex, 1, buttons_disabled, "Delete")
 		tree_item.collapsed = true
@@ -282,13 +283,13 @@ func _on_shortcut_tree_button_clicked(item: TreeItem, _column: int, id: int, _mb
 		var parent_action = item.get_parent().get_metadata(0)
 		if id == 0:  # Edit
 			if action is InputEventKey:
-				keyboard_shortcut_selector.popup_centered()
+				keyboard_shortcut_selector.popup_centered_clamped()
 			elif action is InputEventMouseButton:
-				mouse_shortcut_selector.popup_centered()
+				mouse_shortcut_selector.popup_centered_clamped()
 			elif action is InputEventJoypadButton:
-				joy_key_shortcut_selector.popup_centered()
+				joy_key_shortcut_selector.popup_centered_clamped()
 			elif action is InputEventJoypadMotion:
-				joy_axis_shortcut_selector.popup_centered()
+				joy_axis_shortcut_selector.popup_centered_clamped()
 		elif id == 1:  # Delete
 			if not parent_action is StringName:
 				return
@@ -305,25 +306,23 @@ func _on_ShortcutTree_item_activated() -> void:
 
 func _on_ShortcutTypeMenu_id_pressed(id: int) -> void:
 	if id == KEYBOARD:
-		keyboard_shortcut_selector.popup_centered()
+		keyboard_shortcut_selector.popup_centered_clamped()
 	elif id == MOUSE:
-		mouse_shortcut_selector.popup_centered()
+		mouse_shortcut_selector.popup_centered_clamped()
 	elif id == JOY_BUTTON:
-		joy_key_shortcut_selector.popup_centered()
+		joy_key_shortcut_selector.popup_centered_clamped()
 	elif id == JOY_AXIS:
-		joy_axis_shortcut_selector.popup_centered()
+		joy_axis_shortcut_selector.popup_centered_clamped()
 
 
 func _on_ProfileOptionButton_item_selected(index: int) -> void:
 	Keychain.change_profile(index)
 	rename_profile_button.disabled = false if Keychain.selected_profile.customizable else true
 	delete_profile_button.disabled = false if Keychain.selected_profile.customizable else true
+	if Keychain.profiles.size() == 1:
+		delete_profile_button.disabled = true
 
-	# Re-construct the tree
-	for group in Keychain.groups:
-		Keychain.groups[group].tree_item = null
-	tree.clear()
-	_construct_tree()
+	_recontrust_tree()
 	Keychain.config_file.set_value("shortcuts", "shortcuts_profile", index)
 	Keychain.config_file.save(Keychain.config_path)
 
@@ -332,18 +331,22 @@ func _on_NewProfile_pressed() -> void:
 	is_editing = false
 	profile_name.text = "New Shortcut Profile"
 	profile_settings.title = "New Shortcut Profile"
-	profile_settings.popup_centered()
+	profile_settings.popup_centered_clamped()
+
+
+func _on_reset_profile_pressed() -> void:
+	reset_confirmation.popup_centered_clamped()
 
 
 func _on_RenameProfile_pressed() -> void:
 	is_editing = true
 	profile_name.text = Keychain.selected_profile.name
 	profile_settings.title = "Rename Shortcut Profile"
-	profile_settings.popup_centered()
+	profile_settings.popup_centered_clamped()
 
 
 func _on_DeleteProfile_pressed() -> void:
-	delete_confirmation.popup_centered()
+	delete_confirmation.popup_centered_clamped()
 
 
 func _on_OpenProfileFolder_pressed() -> void:
@@ -392,3 +395,16 @@ func _on_DeleteConfirmation_confirmed() -> void:
 		Keychain.profile_index = 0
 	profile_option_button.select(Keychain.profile_index)
 	_on_ProfileOptionButton_item_selected(Keychain.profile_index)
+
+
+func _on_reset_confirmation_confirmed() -> void:
+	Keychain.selected_profile.copy_bindings_from(Keychain.DEFAULT_PROFILE)
+	Keychain.change_profile(Keychain.profile_index)
+	_recontrust_tree()
+
+
+func _recontrust_tree() -> void:
+	for group in Keychain.groups:
+		Keychain.groups[group].tree_item = null
+	tree.clear()
+	_construct_tree()
