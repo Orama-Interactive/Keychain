@@ -73,9 +73,6 @@ layout_mode = 2
 size_flags_vertical = 3
 hide_root = true
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-
 [node name="ShortcutTypeMenu" type="PopupMenu" parent="."]
 size = Vector2i(154, 116)
 item_count = 4
