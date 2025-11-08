@@ -100,10 +100,6 @@ func _ready() -> void:
 		if saved:
 			profiles.append(profile)
 
-	DEFAULT_PROFILE.fill_bindings()
-	for profile in profiles:
-		profile.fill_bindings()
-
 	profile_index = config_file.get_value("shortcuts", "shortcuts_profile", 0)
 	change_profile(profile_index)
 

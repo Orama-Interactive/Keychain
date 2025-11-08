@@ -358,7 +358,6 @@ func _on_ProfileSettings_confirmed() -> void:
 	var profile := ShortcutProfile.new()
 	profile.name = profile_name.text
 	profile.resource_path = Keychain.PROFILES_PATH.path_join(file_name)
-	profile.fill_bindings()
 	var saved := profile.save()
 	if not saved:
 		return
@@ -379,7 +378,7 @@ func _on_ProfileSettings_confirmed() -> void:
 
 func _delete_profile_file(file_name: String) -> void:
 	var dir := DirAccess.open(file_name.get_base_dir())
-	var err := dir.get_open_error()
+	var err := DirAccess.get_open_error()
 	if err != OK:
 		print("Error deleting shortcut profile %s. Error code: %s" % [file_name, err])
 		return

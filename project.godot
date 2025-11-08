@@ -19,6 +19,10 @@ config/icon="uid://c0jmpr5dakmm7"
 
 Keychain="*res://addons/keychain/Keychain.gd"
 
+[debug]
+
+gdscript/warnings/exclude_addons=false
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/keychain/plugin.cfg")
