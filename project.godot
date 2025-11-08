@@ -13,7 +13,7 @@ config_version=5
 config/name="Keychain"
 run/main_scene="res://addons/keychain/ShortcutEdit.tscn"
 config/features=PackedStringArray("4.5")
-config/icon="res://icon.png"
+config/icon="uid://c0jmpr5dakmm7"
 
 [autoload]
 
