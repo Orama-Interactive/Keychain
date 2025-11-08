@@ -31,10 +31,30 @@ class InputAction:
 	var group := ""
 	var global := true
 
-	func _init(_display_name := "", _group := "", _global := true):
+	func _init(_display_name := "", _group := "", _global := true) -> void:
 		display_name = _display_name
 		group = _group
 		global = _global
+
+
+class MouseMovementInputAction:
+	extends InputAction
+
+	var action_name := &""
+	var mouse_dir := Vector2.RIGHT
+	var distance := 1.0:
+		set(value):
+			if is_zero_approx(value):
+				distance = 1.0
+			else:
+				distance = value
+
+	func get_action_distance(event: InputEvent, exact_match := false) -> float:
+		if event is InputEventMouseMotion and Input.is_action_pressed(action_name, exact_match):
+			var relative := (event as InputEventMouseMotion).relative
+			var relative_dist := relative.length() / distance
+			return relative.normalized().dot(mouse_dir) * relative_dist
+		return 0.0
 
 
 class InputGroup:
