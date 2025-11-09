@@ -64,6 +64,7 @@ const JOY_AXIS_NAMES: PackedStringArray = [
 ]
 
 var currently_editing_tree_item: TreeItem
+var currently_editing_mouse_movement_action: Keychain.MouseMovementInputAction
 var is_editing := false
 # Textures taken from Godot https://github.com/godotengine/godot/tree/master/editor/icons
 var add_tex: Texture2D = preload("assets/add.svg")
@@ -81,6 +82,18 @@ var folder_tex: Texture2D = preload("assets/folder.svg")
 @onready var profile_option_button: OptionButton = find_child("ProfileOptionButton")
 @onready var rename_profile_button: Button = find_child("RenameProfile")
 @onready var delete_profile_button: Button = find_child("DeleteProfile")
+
+@onready var mouse_movement_options: HBoxContainer = $VBoxContainer/MouseMovementOptions
+@onready var mm_top_left: Button = %MMTopLeft
+@onready var mm_top: Button = %MMTop
+@onready var mm_top_right: Button = %MMTopRight
+@onready var mm_left: Button = %MMLeft
+@onready var mm_center: Button = %MMCenter
+@onready var mm_right: Button = %MMRight
+@onready var mm_bottom_left: Button = %MMBottomLeft
+@onready var mm_bottom: Button = %MMBottom
+@onready var mm_bottom_right: Button = %MMBottomRight
+
 @onready var shortcut_type_menu: PopupMenu = $ShortcutTypeMenu
 @onready var keyboard_shortcut_selector: ConfirmationDialog = $KeyboardShortcutSelectorDialog
 @onready var mouse_shortcut_selector: ConfirmationDialog = $MouseShortcutSelectorDialog
@@ -108,6 +121,7 @@ func _ready() -> void:
 
 	profile_option_button.select(Keychain.profile_index)
 	_on_ProfileOptionButton_item_selected(Keychain.profile_index)
+	mm_top_left.button_group.pressed.connect(_on_mouse_movement_angle_changed)
 	if OS.get_name() == "Web":
 		$VBoxContainer/HBoxContainer/OpenProfileFolder.queue_free()
 
@@ -298,6 +312,22 @@ func _on_shortcut_tree_button_clicked(item: TreeItem, _column: int, id: int, _mb
 			item.free()
 
 
+func _on_shortcut_tree_item_selected() -> void:
+	var selected_item: TreeItem = tree.get_selected()
+	var action = selected_item.get_metadata(0)
+	if action is StringName:
+		if not Keychain.actions.has(action):
+			mouse_movement_options.visible = false
+			return
+		var keychain_action := Keychain.actions[action]
+		if keychain_action is Keychain.MouseMovementInputAction:
+			mouse_movement_options.visible = true
+			currently_editing_mouse_movement_action = keychain_action
+			_press_mouse_movement_angle_button()
+		else:
+			mouse_movement_options.visible = false
+
+
 func _on_ShortcutTree_item_activated() -> void:
 	var selected_item: TreeItem = tree.get_selected()
 	if selected_item.get_button_count(0) > 0 and !selected_item.is_button_disabled(0, 0):
@@ -313,6 +343,48 @@ func _on_ShortcutTypeMenu_id_pressed(id: int) -> void:
 		joy_key_shortcut_selector.popup_centered_clamped()
 	elif id == JOY_AXIS:
 		joy_axis_shortcut_selector.popup_centered_clamped()
+
+
+func _on_mouse_movement_angle_changed(button: BaseButton) -> void:
+	match button:
+		mm_top_left:
+			currently_editing_mouse_movement_action.mouse_dir = Vector2(-1, -1)
+		mm_top:
+			currently_editing_mouse_movement_action.mouse_dir = Vector2.UP
+		mm_top_right:
+			currently_editing_mouse_movement_action.mouse_dir = Vector2(1, -1)
+		mm_left:
+			currently_editing_mouse_movement_action.mouse_dir = Vector2.LEFT
+		mm_right:
+			currently_editing_mouse_movement_action.mouse_dir = Vector2.RIGHT
+		mm_bottom_left:
+			currently_editing_mouse_movement_action.mouse_dir = Vector2(-1, 1)
+		mm_bottom:
+			currently_editing_mouse_movement_action.mouse_dir = Vector2.DOWN
+		mm_bottom_right:
+			currently_editing_mouse_movement_action.mouse_dir = Vector2(1, 1)
+	Keychain.change_mouse_movement_action_settings(currently_editing_mouse_movement_action)
+
+
+func _press_mouse_movement_angle_button() -> void:
+	var dir := currently_editing_mouse_movement_action.mouse_dir
+	match dir:
+		Vector2(-1, -1):
+			mm_top_left.button_pressed = true
+		Vector2.UP:
+			mm_top.button_pressed = true
+		Vector2(1, -1):
+			mm_top_right.button_pressed = true
+		Vector2.LEFT:
+			mm_left.button_pressed = true
+		Vector2.RIGHT:
+			mm_right.button_pressed = true
+		Vector2(-1, 1):
+			mm_bottom_left.button_pressed = true
+		Vector2.DOWN:
+			mm_bottom.button_pressed = true
+		Vector2(1, 1):
+			mm_bottom_right.button_pressed = true
 
 
 func _on_ProfileOptionButton_item_selected(index: int) -> void:
