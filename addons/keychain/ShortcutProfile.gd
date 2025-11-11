@@ -26,6 +26,7 @@ func fill_bindings(should_save := true) -> void:
 
 func copy_bindings_from(other_profile: ShortcutProfile) -> void:
 	bindings = other_profile.bindings.duplicate(true)
+	mouse_movement_options = other_profile.mouse_movement_options.duplicate(true)
 	save()
 
 
