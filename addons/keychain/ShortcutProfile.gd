@@ -29,10 +29,10 @@ func copy_bindings_from(other_profile: ShortcutProfile) -> void:
 	save()
 
 
-func change_action(action: String) -> void:
+func change_action(action_name: String) -> void:
 	if not customizable:
 		return
-	bindings[action] = InputMap.action_get_events(action)
+	bindings[action_name] = InputMap.action_get_events(action_name)
 	save()
 
 
