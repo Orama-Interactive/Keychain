@@ -61,6 +61,19 @@ class MouseMovementInputAction:
 
 	var motion_accum := 0.0
 
+	func _init(
+		_display_name := "",
+		_group := "",
+		_global := true,
+		_action_name := &"",
+		_default_mouse_dir := Vector2.RIGHT,
+		_default_sensitivity := 0.1
+	) -> void:
+		super(_display_name, _group, _global)
+		action_name = _action_name
+		default_mouse_dir = _default_mouse_dir
+		default_sensitivity = _default_sensitivity
+
 	func get_action_distance(event: InputEvent, exact_match := false) -> float:
 		if event is InputEventMouseMotion and Input.is_action_pressed(action_name, exact_match):
 			var relative := (event as InputEventMouseMotion).relative

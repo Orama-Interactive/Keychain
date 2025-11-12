@@ -326,7 +326,9 @@ func _on_shortcut_tree_item_selected() -> void:
 			mouse_movement_options.visible = true
 			currently_editing_mouse_movement_action = keychain_action
 			_press_mouse_movement_angle_button()
-			sensitivity_range.set_value_no_signal(currently_editing_mouse_movement_action.sensitivity)
+			sensitivity_range.set_value_no_signal(
+				currently_editing_mouse_movement_action.sensitivity
+			)
 		else:
 			mouse_movement_options.visible = false
 
