@@ -55,7 +55,7 @@ class MouseMovementInputAction:
 	var sensitivity := default_sensitivity:
 		set(value):
 			if is_zero_approx(value):
-				sensitivity = 1.0
+				sensitivity = 0.001
 			else:
 				sensitivity = value
 

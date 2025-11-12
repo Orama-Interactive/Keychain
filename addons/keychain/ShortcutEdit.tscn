@@ -174,9 +174,9 @@ text = "Sensitivity:"
 
 [node name="SensitivityRange" type="SpinBox" parent="VBoxContainer/MouseMovementOptions"]
 layout_mode = 2
-min_value = 0.01
-step = 0.01
-value = 0.09999999999999999
+min_value = 0.001
+step = 0.001
+value = 0.1
 allow_greater = true
 custom_arrow_step = 0.1
 
