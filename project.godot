@@ -12,16 +12,18 @@ config_version=5
 
 config/name="Keychain"
 run/main_scene="res://addons/keychain/ShortcutEdit.tscn"
-config/features=PackedStringArray("4.5")
+config/features=PackedStringArray("4.6")
 config/icon="uid://c0jmpr5dakmm7"
 
 [autoload]
 
-Keychain="*res://addons/keychain/Keychain.gd"
+Keychain="*uid://dgiia2xg7fsud"
 
 [debug]
 
-gdscript/warnings/exclude_addons=false
+gdscript/warnings/directory_rules={
+"res://addons": 1
+}
 
 [editor_plugins]
 
